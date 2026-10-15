@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -12,23 +16,46 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "next/navigation": [
+        "./src/shims/navigation.ts"
+      ],
+      "next/link": [
+        "./src/shims/link.tsx"
+      ],
+      "next/image": [
+        "./src/shims/image.tsx"
+      ],
+      "next/dynamic": [
+        "./src/shims/dynamic.tsx"
+      ]
+    },
+    "types": [
+      "vite/client",
+      "node"
+    ],
     "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@/*": ["./*"]
-    }
+    ]
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "**/*.mts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "src-tauri"]
+  "exclude": [
+    "node_modules",
+    "src-tauri",
+    "dist",
+    ".next",
+    "spike"
+  ]
 }

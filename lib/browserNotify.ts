@@ -1,3 +1,5 @@
+import { assetUrl } from "@/src/lib/assetUrl";
+
 export function requestNotificationPermission() {
   if (typeof Notification !== "undefined" && Notification.permission === "default") {
     Notification.requestPermission();
@@ -6,5 +8,5 @@ export function requestNotificationPermission() {
 
 export function browserNotify(title: string, body: string) {
   if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
-  new Notification(title, { body, icon: "/favicon.ico" });
+  new Notification(title, { body, icon: assetUrl("/favicon.ico") });
 }

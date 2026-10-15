@@ -10,6 +10,7 @@ import { Maximize2, Minimize2, ShieldAlert, X } from "lucide-react";
 /** Local stand-in for the removed Supabase user type. */
 type User = { id: string };
 import { GalleryItem, getToken, galleryCache } from "@/lib/galleryUtils";
+import { assetUrl } from "@/src/lib/assetUrl";
 import { useFolderStore } from "@/lib/folderStore";
 import { MediaPickerModal } from "@/components/MediaPickerModal";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -29,16 +30,13 @@ function randomUUID(): string {
   });
 }
 
-const NEXT_IMG_WIDTHS = [16, 32, 48, 64, 96, 128, 256, 384, 640, 750, 828, 1080, 1200, 1920, 2048, 3840];
-
+// No image optimizer on a static host: thumbnails are the originals.
 function snapWidth(w: number): number {
-  const target = w * 2;
-  return NEXT_IMG_WIDTHS.find(s => s >= target) ?? NEXT_IMG_WIDTHS[NEXT_IMG_WIDTHS.length - 1];
+  return w;
 }
 
-function thumbSrc(url: string, snapped: number): string {
-  if (!url || url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("/_next/")) return url;
-  return `/_next/image?url=${encodeURIComponent(url)}&w=${snapped}&q=75`;
+function thumbSrc(url: string, _snapped: number): string {
+  return assetUrl(url);
 }
 
 interface RefImage {
@@ -419,7 +417,7 @@ function PendingGenTile({ pg, onCancel }: { pg: PendingGen; onCancel: () => void
 
 const CYCLE_NAMES = ["Nano Banana Pro", "GPT Image 2", "Nano Banana 2"];
 const VIDEO_CYCLE_NAMES = ["Seedance 2.0", "Kling 3.0", "Happy Horse"];
-const EMPTY_IMGS = ["/1.webp", "/2.webp", "/3.webp", "/4.webp"];
+const EMPTY_IMGS = ["/1.webp", "/2.webp", "/3.webp", "/4.webp"].map(assetUrl);
 
 function EmptyFan({ blur }: { blur?: boolean }) {
   const configs = [
@@ -668,7 +666,7 @@ function GalleryInner() {
     const CACHE_NAME = "hg-empty-state-v1";
     // Only cache same-origin assets — cross-origin video URLs require CORS headers
     // on the remote server which aren't configured, causing fetch errors.
-    const ASSETS = ["/1.webp", "/2.webp", "/3.webp", "/4.webp"];
+    const ASSETS = ["/1.webp", "/2.webp", "/3.webp", "/4.webp"].map(assetUrl);
     caches.open(CACHE_NAME).then(cache => {
       ASSETS.forEach(url => {
         cache.match(url).then(hit => {

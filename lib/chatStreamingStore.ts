@@ -4,6 +4,7 @@ import { getToken } from "./galleryUtils";
 import { SYSTEM_PROMPT } from "./systemPrompt";
 import { useChatSessionStore, type StoredMessage } from "./chatSessionStore";
 import { useWorkflowStore } from "./store";
+import { currentRoute } from "@/src/lib/assetUrl";
 
 export interface StreamState {
   content: string;
@@ -101,9 +102,9 @@ export const useChatStreamingStore = create<ChatStreamingState>()((set, get) => 
         set((s) => ({ streams: { ...s.streams, [sessionId]: { content: accumulated, status: "done" } } }));
 
         // Notify if user has navigated away from this chat
+        const route = currentRoute();
         const isViewingChat =
-          window.location.pathname === "/chat" &&
-          new URLSearchParams(window.location.search).get("id") === sessionId;
+          route.pathname === "/chat" && route.searchParams.get("id") === sessionId;
         if (!isViewingChat) {
           const sessionTitle = useChatSessionStore.getState().sessions.find((s) => s.id === sessionId)?.title ?? "Chat";
           const preview = accumulated.slice(0, 100).replace(/\n+/g, " ");

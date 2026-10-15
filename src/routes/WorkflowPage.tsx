@@ -1,5 +1,5 @@
-"use client";
-import { use, useEffect } from "react";
+import { useEffect } from "react";
+import { useParams } from "react-router";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useWorkflowStore } from "@/lib/store";
@@ -10,12 +10,8 @@ const WorkflowCanvas = dynamic(() => import("@/components/WorkflowCanvas"), {
   ssr: false,
 });
 
-export default function WorkflowPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function WorkflowPage() {
+  const { id = "" } = useParams();
   const router = useRouter();
   const switchSpace = useWorkflowStore((s) => s.switchSpace);
 

@@ -1,3 +1,5 @@
+import { assetUrl } from "@/src/lib/assetUrl";
+
 export function WorkflowHero() {
   return (
     <section className="relative w-full py-8 md:py-10" style={{ overflowX: "clip", overflowY: "visible" }}>
@@ -36,7 +38,7 @@ export function WorkflowHero() {
               <span className="size-1 shrink-0 rounded-full border border-black/25 bg-[linear-gradient(180deg,#7D7D7D_0%,#92AFAD_100%)]" />
               <div className="rounded-[13px] p-[3px] shadow-[inset_0.3px_0.3px_0.3px_rgba(255,255,255,0.12)] bg-white/[0.08]">
                 <div className="relative overflow-hidden rounded-[10px]" style={{ width: 82, height: 82 }}>
-                  <img alt="" draggable={false} loading="eager" className="absolute inset-0 size-full object-cover rounded-[10px]" src="/1.webp" />
+                  <img alt="" draggable={false} loading="eager" className="absolute inset-0 size-full object-cover rounded-[10px]" src={assetUrl("/1.webp")} />
                 </div>
               </div>
               <span className="size-1 shrink-0 rounded-full border border-black/25 bg-[linear-gradient(180deg,#7D7D7D_0%,#92AFAD_100%)]" />
@@ -51,7 +53,7 @@ export function WorkflowHero() {
               <span className="size-1 shrink-0 rounded-full border border-black/25 bg-[linear-gradient(180deg,#7D7D7D_0%,#92AFAD_100%)]" />
               <div className="rounded-[13px] p-[3px] shadow-[inset_0.3px_0.3px_0.3px_rgba(255,255,255,0.12)] bg-white/20">
                 <div className="relative overflow-hidden rounded-[10px]" style={{ width: 108, height: 162 }}>
-                  <img alt="" draggable={false} loading="eager" className="absolute inset-0 size-full object-cover rounded-[10px]" src="/2.webp" />
+                  <img alt="" draggable={false} loading="eager" className="absolute inset-0 size-full object-cover rounded-[10px]" src={assetUrl("/2.webp")} />
                 </div>
               </div>
               <span className="size-1 shrink-0 rounded-full border border-black/25 bg-[linear-gradient(180deg,#7D7D7D_0%,#92AFAD_100%)]" />
@@ -66,7 +68,7 @@ export function WorkflowHero() {
               <span className="size-1 shrink-0 rounded-full border border-black/25 bg-[linear-gradient(180deg,#7D7D7D_0%,#92AFAD_100%)]" />
               <div className="rounded-[13px] p-[3px] shadow-[inset_0.3px_0.3px_0.3px_rgba(255,255,255,0.12)] bg-white/20">
                 <div className="relative overflow-hidden rounded-[10px]" style={{ width: 162, height: 106 }}>
-                  <img alt="" draggable={false} loading="eager" className="absolute inset-0 size-full object-cover rounded-[10px]" src="/3.webp" />
+                  <img alt="" draggable={false} loading="eager" className="absolute inset-0 size-full object-cover rounded-[10px]" src={assetUrl("/3.webp")} />
                 </div>
               </div>
               <span className="size-1 shrink-0 rounded-full border border-black/25 bg-[linear-gradient(180deg,#7D7D7D_0%,#92AFAD_100%)]" />
@@ -81,7 +83,7 @@ export function WorkflowHero() {
               <span className="size-1 shrink-0 rounded-full border border-black/25 bg-[linear-gradient(180deg,#7D7D7D_0%,#92AFAD_100%)]" />
               <div className="rounded-[13px] p-[3px] shadow-[inset_0.3px_0.3px_0.3px_rgba(255,255,255,0.12)] bg-white/[0.08]">
                 <div className="relative overflow-hidden rounded-[10px]" style={{ width: 178, height: 100 }}>
-                  <img alt="" draggable={false} loading="eager" className="absolute inset-0 size-full object-cover rounded-[10px]" src="/4.webp" />
+                  <img alt="" draggable={false} loading="eager" className="absolute inset-0 size-full object-cover rounded-[10px]" src={assetUrl("/4.webp")} />
                 </div>
               </div>
               <span className="size-1 shrink-0 rounded-full border border-black/25 bg-[linear-gradient(180deg,#7D7D7D_0%,#92AFAD_100%)]" />
