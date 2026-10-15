@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>HeliosGen CORS + WebGPU probe</title>
+  <style>
+    body { font: 14px system-ui, sans-serif; margin: 24px; background: #111; color: #eee; }
+    td, th { padding: 4px 10px; border-bottom: 1px solid #333; text-align: left; }
+    .ok { color: #6c6; } .bad { color: #e66; }
+  </style>
+</head>
+<body>
+  <h1>HeliosGen CORS + WebGPU probe</h1>
+  <p>Uses a dummy token. A readable HTTP status (even 401) means CORS passes; "blocked" means the browser refused.</p>
+  <table><thead><tr><th>Endpoint</th><th>Result</th></tr></thead><tbody id="rows"></tbody></table>
+  <h2>WebGPU</h2>
+  <pre id="gpu">checking…</pre>
+  <script type="module">
+    const AUTH = { Authorization: "Bearer test" };
+    const JSONH = { ...AUTH, "Content-Type": "application/json" };
+    const probes = [
+      ["POST api.kie.ai createTask", "https://api.kie.ai/api/v1/jobs/createTask", { method: "POST", headers: JSONH, body: "{}" }],
+      ["GET api.kie.ai recordInfo", "https://api.kie.ai/api/v1/jobs/recordInfo?taskId=x", { headers: AUTH }],
+      ["GET api.kie.ai chat/credit", "https://api.kie.ai/api/v1/chat/credit", { headers: AUTH }],
+      ["POST api.kie.ai veo/generate", "https://api.kie.ai/api/v1/veo/generate", { method: "POST", headers: JSONH, body: "{}" }],
+      ["POST api.kie.ai gemini chat", "https://api.kie.ai/gemini-3-flash/v1/chat/completions", { method: "POST", headers: JSONH, body: "{}" }],
+      ["POST api.kie.ai claude messages", "https://api.kie.ai/claude/v1/messages", { method: "POST", headers: JSONH, body: "{}" }],
+      ["POST redpandaai base64 upload", "https://kieai.redpandaai.co/api/file-base64-upload", { method: "POST", headers: JSONH, body: "{}" }],
+      ["GET tempfile.aiquickdraw.com", "https://tempfile.aiquickdraw.com/", {}],
+      ["GET api.github.com", "https://api.github.com/repos/SegFault42/HeliosGen", {}],
+    ];
+    const rows = document.getElementById("rows");
+    for (const [label, url, init] of probes) {
+      const tr = rows.insertRow();
+      tr.insertCell().textContent = label;
+      const cell = tr.insertCell();
+      try {
+        const r = await fetch(url, init);
+        const text = (await r.text()).slice(0, 80);
+        cell.innerHTML = `<span class="ok">readable</span> HTTP ${r.status} — ${text.replace(/</g, "&lt;")}`;
+      } catch (e) {
+        cell.innerHTML = `<span class="bad">blocked</span> ${e}`;
+      }
+    }
+
+    const out = document.getElementById("gpu");
+    if (!navigator.gpu) out.textContent = "navigator.gpu missing — WebGPU unavailable";
+    else {
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) out.textContent = "No WebGPU adapter";
+      else {
+        const info = adapter.info ?? {};
+        out.textContent = JSON.stringify({
+          vendor: info.vendor, architecture: info.architecture, description: info.description,
+          shaderF16: adapter.features.has("shader-f16"),
+          maxBufferSize: adapter.limits.maxBufferSize,
+          maxStorageBufferBindingSize: adapter.limits.maxStorageBufferBindingSize,
+        }, null, 2);
+      }
+    }
+    window.__probeDone = true;
+  </script>
+</body>
+</html>
