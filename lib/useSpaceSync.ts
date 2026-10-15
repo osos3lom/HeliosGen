@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWorkflowStore, Space } from "./store";
 import { SYNC_NOW_EVENT, requestWorkflowSync } from "./workflowSyncBus";
+import { getSpaces, saveSpaces, type GuestSpace } from "./browser/db";
 
 const DEBOUNCE_MS  = 1_500; // continuous edits (drag frames, typing): coalesce
 const IMMEDIATE_MS = 250;   // discrete edits (add/delete/connect/resize-end): near-instant, still coalesces a burst
@@ -50,10 +51,8 @@ export function useSpaceSync() {
     if (!hydrated) return;
     (async () => {
       try {
-        const res = await fetch("/api/workflows");
-        if (!res.ok) return;
-        const { spaces: dbSpaces } = (await res.json()) as { spaces: Space[] };
-        if (!dbSpaces?.length) return;
+        const dbSpaces = (await getSpaces()) as unknown as Space[];
+        if (!dbSpaces.length) return;
         loadSpacesFromDB(dbSpaces);
         const now = new Date();
         lastSyncedRef.current = now.getTime();
@@ -67,27 +66,21 @@ export function useSpaceSync() {
   }, [hydrated]); // run once after hydration
 
   // ── Core save (no rate-limit checks) ────────────────────────────────────────
-  // `keepalive` lets the request outlive the page during an unload/pagehide
-  // flush (capped at ~64KB of body by the browser — fine for the stripped
-  // spaces payload; a normal fetch is used for the regular debounced path).
-  const save = useCallback(async ({ keepalive = false }: { keepalive?: boolean } = {}) => {
+  // Writes to IndexedDB (lib/browser/db.ts). A pagehide flush may not finish if
+  // the tab is torn down, but zustand persist has already written the same
+  // state to localStorage synchronously, so nothing is lost.
+  const save = useCallback(async () => {
     dirtyRef.current = false;
     immediateRef.current = false;
     setStatus("syncing");
     try {
       const spacesToSave = useWorkflowStore.getState().spaces.filter((sp) => sp.nodes.length > 0);
-      const res = await fetch("/api/workflows", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        keepalive,
-        body: JSON.stringify({
-          spaces: spacesToSave.map((sp) => ({
-            ...sp,
-            nodes: sp.nodes.map((n) => ({ ...n, data: { ...n.data, inputImage: undefined } })),
-          })),
-        }),
-      });
-      if (!res.ok) throw new Error(String(res.status));
+      await saveSpaces(
+        spacesToSave.map((sp) => ({
+          ...sp,
+          nodes: sp.nodes.map((n) => ({ ...n, data: { ...n.data, inputImage: undefined } })),
+        })) as unknown as GuestSpace[],
+      );
       const now = new Date();
       lastSyncedRef.current = now.getTime();
       setLastSyncedAt(now);
@@ -130,10 +123,10 @@ export function useSpaceSync() {
   //    `visibilitychange` catches app backgrounding while the page is alive
   useEffect(() => {
     if (!hydrated) return;
-    const flush = (keepalive: boolean) => {
+    const flush = () => {
       if (!dirtyRef.current) return;
       if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
-      save({ keepalive });
+      save();
     };
     // Fires synchronously right after a store mutation — before the [spaces]
     // effect re-arms the debounce — so just flag it; that effect then arms a
@@ -143,8 +136,8 @@ export function useSpaceSync() {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(save, IMMEDIATE_MS);
     };
-    const onPageHide = () => flush(true);
-    const onVisibility = () => { if (document.visibilityState === "hidden") flush(false); };
+    const onPageHide = () => flush();
+    const onVisibility = () => { if (document.visibilityState === "hidden") flush(); };
     window.addEventListener(SYNC_NOW_EVENT, onSyncNow);
     window.addEventListener("pagehide", onPageHide);
     document.addEventListener("visibilitychange", onVisibility);

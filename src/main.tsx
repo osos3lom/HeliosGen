@@ -7,6 +7,7 @@ import "@fontsource/geist-mono/latin.css";
 import "@fontsource/doto/latin-900.css";
 import "./globals.css";
 import RootLayout from "./RootLayout";
+import { registerMediaWorker } from "@/lib/browser/registerMediaWorker";
 import GalleryPage from "./routes/GalleryPage";
 import ChatPage from "./routes/ChatPage";
 import WorkflowListPage from "./routes/WorkflowListPage";
@@ -26,6 +27,8 @@ const router = createHashRouter([
     ],
   },
 ]);
+
+void registerMediaWorker();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

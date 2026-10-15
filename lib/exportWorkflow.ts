@@ -10,6 +10,7 @@
  */
 import { makeZip, type ZipEntry } from "./makeZip";
 import type { Space } from "./store";
+import { isLocalMediaPath } from "./browser/media";
 
 export const WORKFLOW_FORMAT = "heliosgen-workflow";
 export const WORKFLOW_FORMAT_VERSION = 1;
@@ -19,7 +20,7 @@ const ASSET_PREFIX = "assets/";
 function looksLikeAssetUrl(v: unknown): v is string {
   if (typeof v !== "string" || !v) return false;
   return (
-    v.startsWith("/generated/") ||
+    isLocalMediaPath(v) ||
     v.startsWith("http://") ||
     v.startsWith("https://") ||
     v.startsWith("data:image/") ||
