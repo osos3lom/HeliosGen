@@ -425,8 +425,6 @@ function ApiKeysPanel({
   azureKeyStatus,
   onAzureKeySave,
   onAzureKeyDelete,
-  codexStatus,
-  onCodexLoginSuccess,
 }: {
   azureBaseUrl: string;
   onBaseUrlChange: (v: string) => void;
@@ -436,8 +434,6 @@ function ApiKeysPanel({
   azureKeyStatus: "unknown" | "set" | "unset";
   onAzureKeySave: (key: string) => Promise<void>;
   onAzureKeyDelete: () => Promise<void>;
-  codexStatus: CodexStatus;
-  onCodexLoginSuccess: () => void;
 }) {
   const [kieInput, setKieInput]       = useState("");
   const [kieSaving, setKieSaving]     = useState(false);
@@ -445,66 +441,6 @@ function ApiKeysPanel({
   const [azureInput, setAzureInput]   = useState("");
   const [azureSaving, setAzureSaving] = useState(false);
   const [azureError, setAzureError]   = useState<string | null>(null);
-
-  type CodexLoginFlow =
-    | { status: "idle" }
-    | { status: "starting" }
-    | { status: "pending"; url: string; code: string }
-    | { status: "error"; error: string };
-  const [loginFlow, setLoginFlow] = useState<CodexLoginFlow>({ status: "idle" });
-  const [codeCopied, setCodeCopied] = useState(false);
-
-  const handleConnectCodex = async () => {
-    setLoginFlow({ status: "starting" });
-    try {
-      const res = await fetch("/api/settings/codex-login", { method: "POST" });
-      const d = await res.json();
-      if (d.status === "pending") setLoginFlow({ status: "pending", url: d.url, code: d.code });
-      else setLoginFlow({ status: "error", error: d.error ?? "Failed to start login" });
-    } catch (e: unknown) {
-      setLoginFlow({ status: "error", error: e instanceof Error ? e.message : "Failed to start login" });
-    }
-  };
-
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code).then(() => {
-      setCodeCopied(true);
-      setTimeout(() => setCodeCopied(false), 1500);
-    }).catch(() => {});
-  };
-
-  /* Poll while a device-code login is pending, until it resolves */
-  useEffect(() => {
-    if (loginFlow.status !== "pending") return;
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch("/api/settings/codex-login");
-        const d = await res.json();
-        if (d.status === "success") {
-          setLoginFlow({ status: "idle" });
-          onCodexLoginSuccess();
-        } else if (d.status === "error") {
-          // Safety net: the login-store verdict can race the credential write.
-          // Before showing a red error, confirm against codex-status (which
-          // just checks auth.json on disk) — if the login actually landed,
-          // treat it as success instead of latching an error.
-          let recovered = false;
-          try {
-            const s = await fetch("/api/settings/codex-status").then((r) => r.json());
-            if (s.ready || s.authFound) recovered = true;
-          } catch { /* fall through to error */ }
-          if (recovered) {
-            setLoginFlow({ status: "idle" });
-            onCodexLoginSuccess();
-          } else {
-            setLoginFlow({ status: "error", error: d.error ?? "Login failed" });
-          }
-        }
-        // "pending" → keep polling
-      } catch { /* network hiccup — keep polling */ }
-    }, 2500);
-    return () => clearInterval(interval);
-  }, [loginFlow.status, onCodexLoginSuccess]);
 
   const handleKieSave = async () => {
     if (!kieInput.trim()) return;
@@ -795,154 +731,6 @@ function ApiKeysPanel({
             Combined with per-model deployment names below.
           </p>
         </div>
-      </div>
-
-      {/* ──── Codex CLI status ─────────────────────────────────────────── */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          padding: "16px",
-          background: "rgba(74,222,128,0.04)",
-          border: "1px solid rgba(74,222,128,0.14)",
-          borderRadius: "12px",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <span
-            style={{
-              width: "28px", height: "28px", borderRadius: "7px",
-              background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            <ProviderBrandIcon id="codex" size={16} />
-          </span>
-          <div>
-            <div style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>Codex CLI</div>
-            <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.28)", marginTop: "1px" }}>
-              Uses the server&apos;s local <code style={{ fontFamily: "monospace" }}>codex login</code> session — no per-user key
-            </div>
-          </div>
-          <span
-            style={{
-              marginLeft: "auto", fontSize: "10px", fontWeight: 600,
-              color: codexStatus.kind === "ready" ? "rgba(74,222,128,0.8)" : "rgba(251,146,60,0.8)",
-              background: codexStatus.kind === "ready" ? "rgba(74,222,128,0.08)" : "rgba(251,146,60,0.08)",
-              border: `1px solid ${codexStatus.kind === "ready" ? "rgba(74,222,128,0.2)" : "rgba(251,146,60,0.2)"}`,
-              borderRadius: "5px", padding: "2px 7px", letterSpacing: "0.04em", whiteSpace: "nowrap",
-            }}
-          >
-            {codexStatus.kind === "unknown" ? "CHECKING…" : codexStatus.kind === "ready" ? "READY" : "NOT CONFIGURED"}
-          </span>
-        </div>
-
-        {/* auth.json can exist but hold a stale/invalidated refresh token (e.g. the
-            "session has ended" 401) — the status check only sees that the file is
-            there, so it still reports READY. Offer a manual reauth escape hatch. */}
-        {codexStatus.kind === "ready" && loginFlow.status === "idle" && (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.2)", margin: 0, lineHeight: 1.5, flex: 1 }}>
-              Getting a &quot;session has ended&quot; or 401 error? Reauth below.
-            </p>
-            <button
-              onClick={handleConnectCodex}
-              style={{
-                padding: "7px 14px", borderRadius: "7px", border: "1px solid rgba(74,222,128,0.3)",
-                background: "rgba(74,222,128,0.1)", color: "rgba(74,222,128,0.9)",
-                cursor: "pointer", fontSize: "12px", fontWeight: 500, whiteSpace: "nowrap",
-              }}
-            >
-              Reauth
-            </button>
-          </div>
-        )}
-
-        {/* Starting a new login immediately invalidates any existing session on this
-            host — the CLI clears old credentials the moment a login attempt begins,
-            before the user does anything in the browser. Only offer it when auth is
-            actually missing; a missing binary alone shouldn't risk a working login. */}
-        {codexStatus.kind === "not_ready" && !codexStatus.authFound && loginFlow.status === "idle" && (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.2)", margin: 0, lineHeight: 1.5, flex: 1 }}>
-              Requires <a href="https://github.com/jdmnk/codex-imagegen-cli" target="_blank" rel="noreferrer" style={{ color: "rgba(255,255,255,0.4)" }}>codex-imagegen-cli</a> installed on this server. Sign in below.
-            </p>
-            <button
-              onClick={handleConnectCodex}
-              style={{
-                padding: "7px 14px", borderRadius: "7px", border: "1px solid rgba(74,222,128,0.3)",
-                background: "rgba(74,222,128,0.1)", color: "rgba(74,222,128,0.9)",
-                cursor: "pointer", fontSize: "12px", fontWeight: 500, whiteSpace: "nowrap",
-              }}
-            >
-              Connect Codex
-            </button>
-          </div>
-        )}
-
-        {codexStatus.kind === "not_ready" && codexStatus.authFound && !codexStatus.installed && loginFlow.status === "idle" && (
-          <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.2)", margin: 0, lineHeight: 1.5 }}>
-            Signed in, but <a href="https://github.com/jdmnk/codex-imagegen-cli" target="_blank" rel="noreferrer" style={{ color: "rgba(255,255,255,0.4)" }}>codex-imagegen-cli</a> isn&apos;t installed on this server yet — image generation will fail until it is.
-          </p>
-        )}
-
-        {loginFlow.status === "starting" && (
-          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", margin: 0 }}>Starting login…</p>
-        )}
-
-        {loginFlow.status === "pending" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px" }}>
-            <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.6 }}>
-              1. Open{" "}
-              <a href={loginFlow.url} target="_blank" rel="noreferrer" style={{ color: "rgba(74,222,128,0.85)" }}>
-                {loginFlow.url}
-              </a>
-              <br />
-              2. Enter this one-time code:
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span
-                style={{
-                  fontFamily: "monospace", fontSize: "15px", fontWeight: 700, letterSpacing: "0.06em",
-                  color: "rgba(74,222,128,0.9)", background: "rgba(74,222,128,0.08)",
-                  border: "1px solid rgba(74,222,128,0.2)", borderRadius: "6px", padding: "6px 12px",
-                }}
-              >
-                {loginFlow.code}
-              </span>
-              <button
-                onClick={() => handleCopyCode(loginFlow.code)}
-                style={{
-                  padding: "6px 10px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.1)",
-                  background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.6)",
-                  cursor: "pointer", fontSize: "11px", fontWeight: 500,
-                }}
-              >
-                {codeCopied ? "Copied" : "Copy"}
-              </button>
-            </div>
-            <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.25)", margin: 0 }}>
-              Waiting for confirmation… the code expires in 15 minutes.
-            </p>
-          </div>
-        )}
-
-        {loginFlow.status === "error" && (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <p style={{ fontSize: "11px", color: "rgba(239,68,68,0.7)", margin: 0, flex: 1 }}>{loginFlow.error}</p>
-            <button
-              onClick={handleConnectCodex}
-              style={{
-                padding: "6px 12px", borderRadius: "7px", border: "1px solid rgba(255,255,255,0.1)",
-                background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.6)",
-                cursor: "pointer", fontSize: "12px", fontWeight: 500, whiteSpace: "nowrap",
-              }}
-            >
-              Try again
-            </button>
-          </div>
-        )}
       </div>
 
     </div>
@@ -1342,7 +1130,6 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const [azureTextModelName, setAzureTextModelName]   = useState("model-router");
   const [kieKeyStatus, setKieKeyStatus]               = useState<"unknown" | "set" | "unset">("unknown");
   const [azureKeyStatus, setAzureKeyStatus]   = useState<"unknown" | "set" | "unset">("unknown");
-  const [codexStatus, setCodexStatus]         = useState<CodexStatus>({ kind: "unknown" });
   const setKieKeySet    = useWorkflowStore((s) => s.setKieKeySet);
   const setAzureKeySet  = useWorkflowStore((s) => s.setAzureKeySet);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -1350,15 +1137,6 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   async function authHeader(): Promise<Record<string, string>> {
     return {};
   }
-
-  const refreshCodexStatus = useCallback(() => {
-    fetch("/api/settings/codex-status")
-      .then((r) => r.json())
-      .then((d: { ready: boolean; installed: boolean; authFound: boolean }) =>
-        setCodexStatus(d.ready ? { kind: "ready" } : { kind: "not_ready", installed: d.installed, authFound: d.authFound })
-      )
-      .catch(() => setCodexStatus({ kind: "not_ready", installed: false, authFound: false }));
-  }, []);
 
   /* Load persisted data on mount */
   useEffect(() => {
@@ -1381,9 +1159,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         .then((d) => setAzureKeyStatus(d.hasToken ? "set" : "unset"))
         .catch(() => setAzureKeyStatus("unset"))
     );
-    // Check whether the server has a working codex-imagegen + codex login
-    refreshCodexStatus();
-  }, [refreshCodexStatus]);
+  }, []);
 
   /* Close on Escape */
   useEffect(() => {
@@ -1657,8 +1433,6 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 azureKeyStatus={azureKeyStatus}
                 onAzureKeySave={handleAzureKeySave}
                 onAzureKeyDelete={handleAzureKeyDelete}
-                codexStatus={codexStatus}
-                onCodexLoginSuccess={refreshCodexStatus}
               />
             )}
             {activeNav === "image-models" && (

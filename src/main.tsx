@@ -8,6 +8,7 @@ import "@fontsource/doto/latin-900.css";
 import "./globals.css";
 import RootLayout from "./RootLayout";
 import { registerMediaWorker } from "@/lib/browser/registerMediaWorker";
+import { resumePendingJobs } from "@/lib/api/jobs";
 import GalleryPage from "./routes/GalleryPage";
 import ChatPage from "./routes/ChatPage";
 import WorkflowListPage from "./routes/WorkflowListPage";
@@ -29,6 +30,8 @@ const router = createHashRouter([
 ]);
 
 void registerMediaWorker();
+// Generation jobs are polled from the page; pick up any a reload interrupted.
+void resumePendingJobs();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

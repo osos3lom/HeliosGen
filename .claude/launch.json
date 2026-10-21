@@ -1,0 +1,51 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "dev"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "dev:api"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "spike",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5199",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "spike"
+      ],
+      "port": 5199
+    },
+    {
+      "name": "pages",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "exec",
+        "vite",
+        "preview",
+        "--port",
+        "4173",
+        "--strictPort"
+      ],
+      "env": {
+        "VITE_BASE": "/HeliosGen/"
+      },
+      "port": 4173
+    }
+  ]
+}

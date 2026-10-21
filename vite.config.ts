@@ -7,9 +7,6 @@ const r = (p: string) => path.resolve(__dirname, p);
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  // Transitional (Phases 1–2): while the API is still served by Next route
-  // handlers, `pnpm dev:api` runs them on :3000 and Vite proxies to it.
-  const legacyApi = env.HELIOS_LEGACY_API ?? "http://localhost:3000";
 
   return {
     // GitHub Pages serves project sites from /<repo>/; CI sets VITE_BASE.
@@ -31,10 +28,10 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
-      proxy: {
-        "/api": { target: legacyApi, changeOrigin: true },
-        "/generated": { target: legacyApi, changeOrigin: true },
-      },
+    },
+    optimizeDeps: {
+      // ffmpeg.wasm spawns its own module worker; pre-bundling breaks that.
+      exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
     },
     build: {
       outDir: "dist",
