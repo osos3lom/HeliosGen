@@ -115,13 +115,27 @@ async function requireWebGPU(): Promise<void> {
 
 // ── Local LLM (WebLLM) ────────────────────────────────────────────────────────
 
+/**
+ * WebLLM reports long sentences ("Fetching param cache : 64MB fetched. 23%
+ * completed, 100 secs elapsed. It can take a while…"); keep the first clause.
+ */
+function shortLlmStage(text: string): string {
+  const t = text.replace(/\s*\[.*?\]\s*/g, " ").trim();
+  if (!t) return "Loading model";
+  const [head, rest = ""] = t.split(/\s*:\s*/, 2);
+  const detail = rest.split(".")[0]?.trim();
+  if (/fetch/i.test(head)) return `Downloading model${detail ? ` · ${detail}` : ""}`;
+  if (/load/i.test(head)) return "Loading model onto the GPU";
+  return head;
+}
+
 let engine: Promise<MLCEngineInterface> | null = null;
 let engineModel: string | null = null;
 let llmProgress: OnProgress | undefined;
 
 async function getEngine(webllmId: string): Promise<MLCEngineInterface> {
   const initProgressCallback = (r: { progress: number; text: string }) =>
-    llmProgress?.({ stage: r.text.replace(/\s*\[.*?\]\s*/g, " ").trim() || "Loading model", fraction: r.progress });
+    llmProgress?.({ stage: shortLlmStage(r.text), fraction: r.progress });
   if (!engine) {
     engineModel = webllmId;
     engine = import("@mlc-ai/web-llm")
@@ -228,6 +242,8 @@ export function runLocalTool(opts: { tool: LocalTool; image: Blob; onProgress?: 
 /** Store a locally generated image in OPFS and the gallery (`local/<model>`). */
 export async function saveLocalImage(png: Blob, opts: { modelId: string; prompt?: string; referenceUrls?: string[] }): Promise<string> {
   const imageUrl = await uploadBuffer(png, "image/png", "images");
+  // Identical bytes dedupe to the same file; don't add a second gallery row.
+  if (await db.db.generations.filter((g) => g.image_url === imageUrl).count()) return imageUrl;
   await db.insertGeneration({
     task_id: `local-${crypto.randomUUID()}`,
     user_id: GUEST_USER_ID,

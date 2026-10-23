@@ -2,7 +2,7 @@
 // Settings → Local models: WebGPU status, storage use, and per-model
 // download/delete for the on-device nodes.
 import { useCallback, useEffect, useState } from "react";
-import { ALL_LOCAL_MODELS, LOCAL_LLMS, type LocalModel } from "@/lib/local/catalog";
+import { ALL_LOCAL_MODELS, LOCAL_LLMS, LOCAL_TOOLS, type LocalModel } from "@/lib/local/catalog";
 import { getGpuCapabilities, type GpuCapabilities } from "@/lib/local/capabilities";
 import { deleteCachedModel, isModelCached } from "@/lib/local/modelCache";
 import { preloadSdTurbo, runLocalLLM, runLocalTool, type LocalProgress } from "@/lib/local/runtime";
@@ -25,7 +25,6 @@ async function download(model: LocalModel, onProgress: (p: LocalProgress) => voi
   } else if (model.kind === "image") {
     await preloadSdTurbo(onProgress);
   } else {
-    const { LOCAL_TOOLS } = await import("@/lib/local/catalog");
     const tool = LOCAL_TOOLS.find((t) => t.id === model.id)!;
     await runLocalTool({ tool, image: await tinyImage(), onProgress });
   }

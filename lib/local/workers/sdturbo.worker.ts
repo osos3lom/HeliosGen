@@ -45,6 +45,19 @@ async function modelDir(): Promise<FileSystemDirectoryHandle> {
   return models.getDirectoryHandle(MODEL_DIR[1], { create: true });
 }
 
+/** Hugging Face connections occasionally drop at the start; retry a few times. */
+async function fetchWithRetry(url: string, attempts = 4): Promise<Response> {
+  for (let i = 1; ; i++) {
+    try {
+      const res = await fetch(url);
+      if (res.ok || res.status < 500 || i >= attempts) return res;
+    } catch (e) {
+      if (i >= attempts) throw e;
+    }
+    await new Promise((r) => setTimeout(r, 1000 * 2 ** i));
+  }
+}
+
 async function fetchCached(url: string, name: string, onBytes: (loaded: number, total: number) => void): Promise<ArrayBuffer> {
   const dir = await modelDir();
   try {
@@ -57,7 +70,7 @@ async function fetchCached(url: string, name: string, onBytes: (loaded: number, 
     /* not cached yet */
   }
 
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok || !res.body) throw new Error(`Download failed (${res.status}) for ${url}`);
   const total = Number(res.headers.get("content-length") ?? 0);
   const partHandle = await dir.getFileHandle(`${name}.part`, { create: true });
