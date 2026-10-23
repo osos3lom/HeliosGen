@@ -148,7 +148,7 @@ function toHalf(v: number): number {
   f32[0] = v;
   const x = u32[0];
   const sign = (x >> 16) & 0x8000;
-  let exp = ((x >> 23) & 0xff) - 127 + 15;
+  const exp = ((x >> 23) & 0xff) - 127 + 15;
   let mant = x & 0x7fffff;
   if (exp <= 0) {
     if (exp < -10) return sign;

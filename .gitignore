@@ -48,8 +48,6 @@ next-env.d.ts
 /data/*.db
 /data/*.db-shm
 /data/*.db-wal
-/public/generated/**
-!/public/generated/.gitkeep
 
 # Tauri desktop build artifacts
 /src-tauri/target/

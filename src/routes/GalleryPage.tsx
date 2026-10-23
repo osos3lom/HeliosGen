@@ -2316,7 +2316,7 @@ function GalleryInner() {
       setVidRefAudios([]);
       setVidElements([]);
 
-      let remaining = [...newRefs];
+      const remaining = [...newRefs];
       if (handles.includes("startFrame") && remaining.length > 0) {
         setVidStartFrame(remaining.shift()!);
       }
