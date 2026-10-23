@@ -6,6 +6,7 @@ import { useWorkflowStore } from "@/lib/store";
 import { PROVIDERS, ProviderId, loadModelProviders, saveModelProviders, getModelProvider } from "@/lib/providers";
 import { apiFetch } from "@/lib/api/client";
 import LocalModelsPanel from "@/components/LocalModelsPanel";
+import DataImportPanel from "@/components/DataImportPanel";
 
 /* ─── Provider options (re-exported for backwards compat) ───────────────────── */
 
@@ -92,7 +93,7 @@ export function saveAzureTextModelName(name: string) {
 
 const IS_DEBUG = process.env.NEXT_PUBLIC_DEBUG === "true";
 
-type NavId = "api-keys" | "image-models" | "video-models" | "text-models" | "local-models" | "debug";
+type NavId = "api-keys" | "image-models" | "video-models" | "text-models" | "local-models" | "data" | "debug";
 
 const NAV_BASE: { id: NavId; label: string; icon: React.ReactNode }[] = [
   {
@@ -145,6 +146,17 @@ const NAV_BASE: { id: NavId; label: string; icon: React.ReactNode }[] = [
         <rect x="4" y="4" width="16" height="16" rx="2" />
         <rect x="9" y="9" width="6" height="6" />
         <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
+      </svg>
+    ),
+  },
+  {
+    id: "data",
+    label: "Data",
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3" />
+        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+        <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
       </svg>
     ),
   },
@@ -1470,6 +1482,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               />
             )}
             {activeNav === "local-models" && <LocalModelsPanel />}
+            {activeNav === "data" && <DataImportPanel />}
             {activeNav === "debug" && IS_DEBUG && <DebugPanel />}
           </div>
         </div>

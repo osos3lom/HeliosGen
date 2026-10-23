@@ -31,6 +31,13 @@ export async function getToken(): Promise<string | undefined> {
 const _galleryCacheMem = new Map<string, { items: GalleryItem[]; hasMore: boolean }>();
 
 export const galleryCache = {
+  /** Forget every cached tab (e.g. after importing data) so the next view refetches. */
+  clear() {
+    _galleryCacheMem.clear();
+    try {
+      for (const k of Object.keys(localStorage)) if (k.startsWith("nf-gallery-cache-")) localStorage.removeItem(k);
+    } catch { /* storage unavailable */ }
+  },
   get(tab: string): { items: GalleryItem[]; hasMore: boolean } | undefined {
     const mem = _galleryCacheMem.get(tab);
     if (mem) return mem;
