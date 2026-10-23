@@ -15,6 +15,7 @@ import { errorMessage, json, type RouteModule } from "./http";
 type Loader = () => Promise<RouteModule>;
 
 const ROUTES: Array<[pattern: string, load: Loader]> = [
+  ["/api/assets", () => import("./handlers/assets")],
   ["/api/assistant", () => import("./handlers/assistant")],
   ["/api/credit", () => import("./handlers/credit")],
   ["/api/download", () => import("./handlers/download")],

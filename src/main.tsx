@@ -10,6 +10,7 @@ import RootLayout from "./RootLayout";
 import { registerMediaWorker } from "@/lib/browser/registerMediaWorker";
 import { resumePendingJobs } from "@/lib/api/jobs";
 import GalleryPage from "./routes/GalleryPage";
+import AssetsPage from "./routes/AssetsPage";
 import ChatPage from "./routes/ChatPage";
 import WorkflowListPage from "./routes/WorkflowListPage";
 import WorkflowPage from "./routes/WorkflowPage";
@@ -21,6 +22,7 @@ const router = createHashRouter([
     children: [
       { index: true, element: <Navigate to="/gallery?tab=images" replace /> },
       { path: "gallery", element: <GalleryPage /> },
+      { path: "assets", element: <AssetsPage /> },
       { path: "chat", element: <ChatPage /> },
       { path: "workflow", element: <WorkflowListPage /> },
       { path: "workflow/:id", element: <WorkflowPage /> },
