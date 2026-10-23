@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useCallback, useState, useEffect } from "react";
-import NextImage from "next/image";
+import NextImage from "@/components/ui/img";
 import { Handle, Position, NodeProps, Node, useReactFlow, useUpdateNodeInternals } from "@xyflow/react";
 import CornerResizer from "./CornerResizer";
 import { useWorkflowStore, NodeData } from "@/lib/store";
@@ -719,7 +719,6 @@ export default function VideoInputNode({ id, data, selected }: NodeProps<VideoIn
             if (!selected) setNodes((nds) => nds.map((n) => ({ ...n, selected: n.id === id })));
           }}
         >
-          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <video
             ref={videoRef}
             src={baseVideoUrl}
@@ -770,7 +769,6 @@ export default function VideoInputNode({ id, data, selected }: NodeProps<VideoIn
 
           {/* Top video layer — new URL loads here at opacity 0, fades in, then promotes to base */}
           {topVideoUrl && (
-            // eslint-disable-next-line jsx-a11y/media-has-caption
             <video
               ref={topVideoRef}
               src={topVideoUrl}
@@ -806,7 +804,6 @@ export default function VideoInputNode({ id, data, selected }: NodeProps<VideoIn
 
           {/* Frame view overlay — shown when toggle is set to "frame" */}
           {viewMode === "frame" && displayFrameUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={displayFrameUrl}
               alt="Captured frame"
@@ -1160,7 +1157,6 @@ export default function VideoInputNode({ id, data, selected }: NodeProps<VideoIn
                   style={{ objectFit: "fill" }}
                 />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={capturedFrameUrl} alt="Captured frame" className="w-full h-full" style={{ objectFit: "fill" }} />
               )}
 

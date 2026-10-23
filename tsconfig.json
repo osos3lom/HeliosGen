@@ -19,44 +19,22 @@
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "next/navigation": [
-        "./src/shims/navigation.ts"
-      ],
-      "next/link": [
-        "./src/shims/link.tsx"
-      ],
-      "next/image": [
-        "./src/shims/image.tsx"
-      ],
-      "next/dynamic": [
-        "./src/shims/dynamic.tsx"
       ]
     },
     "types": [
       "vite/client",
       "node",
       "@webgpu/types"
-    ],
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
     ]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "**/*.mts",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    "**/*.mts"
   ],
   "exclude": [
     "node_modules",
-    "src-tauri",
     "dist",
-    ".next",
     "spike"
   ]
 }

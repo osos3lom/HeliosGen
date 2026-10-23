@@ -1,18 +1,15 @@
-import { useEffect } from "react";
-import { useParams } from "react-router";
-import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import { lazy, Suspense, useEffect } from "react";
+import { useNavigate, useParams } from "react-router";
 import { useWorkflowStore } from "@/lib/store";
 import { useSpaceSync } from "@/lib/useSpaceSync";
 import { QuickAssist } from "@/components/QuickAssist";
 
-const WorkflowCanvas = dynamic(() => import("@/components/WorkflowCanvas"), {
-  ssr: false,
-});
+// The canvas (React Flow + node components) is the heaviest chunk; load it on demand.
+const WorkflowCanvas = lazy(() => import("@/components/WorkflowCanvas"));
 
 export default function WorkflowPage() {
   const { id = "" } = useParams();
-  const router = useRouter();
+  const navigate = useNavigate();
   const switchSpace = useWorkflowStore((s) => s.switchSpace);
 
   useSpaceSync();
@@ -22,15 +19,17 @@ export default function WorkflowPage() {
   useEffect(() => {
     const spaces = useWorkflowStore.getState().spaces;
     if (!spaces.some((sp) => sp.id === id)) {
-      router.replace("/");
+      navigate("/", { replace: true });
       return;
     }
     switchSpace(id);
-  }, [id, switchSpace, router]);
+  }, [id, switchSpace, navigate]);
 
   return (
     <div className="flex-1 flex overflow-hidden min-h-0">
-      <WorkflowCanvas />
+      <Suspense fallback={null}>
+        <WorkflowCanvas />
+      </Suspense>
       <QuickAssist />
     </div>
   );

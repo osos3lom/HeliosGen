@@ -678,7 +678,6 @@ export function MediaPickerModal({
               style={{ maxWidth: "90vw", maxHeight: "90vh", borderRadius: "10px", boxShadow: "0 24px 80px rgba(0,0,0,0.8)" }}
             />
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={previewItem.url}
               alt=""

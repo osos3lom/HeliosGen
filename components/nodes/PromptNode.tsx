@@ -920,10 +920,8 @@ export default function PromptNode({ id, data, selected }: NodeProps<PromptNodeT
                 >
                   <div className="w-6 h-6 rounded bg-[#1A1A1A] overflow-hidden shrink-0 flex items-center justify-center">
                     {imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={thumbSrc(imageUrl, 24)} alt="" className="w-full h-full object-cover" />
                     ) : videoUrl ? (
-                      // eslint-disable-next-line jsx-a11y/media-has-caption
                       <video
                         src={videoUrl}
                         autoPlay
@@ -1109,14 +1107,12 @@ export default function PromptNode({ id, data, selected }: NodeProps<PromptNodeT
               }}
             >
               {chipPopover.preview.videoUrl ? (
-                // eslint-disable-next-line jsx-a11y/media-has-caption
                 <video
                   src={chipPopover.preview.videoUrl}
                   autoPlay loop muted playsInline
                   style={{ display: "block", width: "100%", height: "auto" }}
                 />
               ) : chipPopover.preview.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={thumbSrc(chipPopover.preview.imageUrl, 140)}
                   alt=""
@@ -1280,7 +1276,7 @@ function syntaxHighlightJson(json: string, errorPos?: number, knownLabels: strin
     }
   };
 
-  const re = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(true|false|null)|([{}\[\],])/g;
+  const re = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(true|false|null)|([{}[\],])/g;
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(json)) !== null) {

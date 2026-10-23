@@ -16,6 +16,9 @@ function perimToAngle(dist: number, W: number, H: number, r: number): number {
   let x: number, y: number;
 
   // Traverse clockwise starting from top-center
+  // Each condition subtracts the previous segment's length from `s` before
+  // comparing, so repeated-looking conditions test different segments.
+  /* eslint-disable no-dupe-else-if */
   if (s < halfSw) {
     x = s; y = -H / 2;
   } else if ((s -= halfSw) < arcLen) {
@@ -39,6 +42,7 @@ function perimToAngle(dist: number, W: number, H: number, r: number): number {
   } else {
     s -= arcLen; x = -W / 2 + r + s; y = -H / 2;
   }
+  /* eslint-enable no-dupe-else-if */
 
   // CSS conic angle: 0° = top, clockwise. Formula: atan2(x, -y).
   return (Math.atan2(x, -y) * (180 / Math.PI) + 360) % 360;

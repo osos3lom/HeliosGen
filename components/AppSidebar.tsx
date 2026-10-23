@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Link } from "react-router";
+import Image from "@/components/ui/img";
+import { useNavigate, useLocation, useSearchParams } from "react-router";
 import { useWorkflowStore } from "@/lib/store";
 import { useChatSessionStore } from "@/lib/chatSessionStore";
 import { useFolderStore } from "@/lib/folderStore";
@@ -665,9 +665,9 @@ function CreditIcon({ size = 12 }: { size?: number }) {
 
 // ── Sidebar component ─────────────────────────────────────────────────────────
 export function AppSidebar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const tab = searchParams.get("tab") ?? "images";
   const activeChatId = searchParams.get("id");
 
@@ -726,14 +726,14 @@ export function AppSidebar() {
   }, [loadFromServer]);
 
   function startNewChat() {
-    router.push("/chat");
+    navigate("/chat");
   }
 
   function handleDeleteChat(id: string, isActive: boolean) {
     deleteSession(id);
     if (isActive) {
       const next = sessions.find(s => s.id !== id);
-      router.push(next ? `/chat?id=${next.id}` : "/chat");
+      navigate(next ? `/chat?id=${next.id}` : "/chat");
     }
   }
 
@@ -850,7 +850,7 @@ export function AppSidebar() {
               <button key={item.label} className={itemCls(item.active)} onClick={item.onClick} title={item.label}>{content}</button>
             );
             return (
-              <Link key={item.label} href={item.href} onClick={item.onClick} className={itemCls(item.active)} title={item.label}>{content}</Link>
+              <Link key={item.label} to={item.href} onClick={item.onClick} className={itemCls(item.active)} title={item.label}>{content}</Link>
             );
           })}
         </div>
@@ -952,7 +952,7 @@ export function AppSidebar() {
               return (
                 <div
                   key={sess.id}
-                  onClick={() => router.push(`/chat?id=${sess.id}`)}
+                  onClick={() => navigate(`/chat?id=${sess.id}`)}
                   className={cn(
                     "group flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer transition-colors",
                     isActive ? "bg-white/[0.07]" : "hover:bg-white/[0.04]"

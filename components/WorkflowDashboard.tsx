@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import NextImage from "next/image";
-import { useRouter } from "next/navigation";
+import NextImage from "@/components/ui/img";
+import { useNavigate } from "react-router";
 import { useWorkflowStore, Space } from "@/lib/store";
 import { makeUGCTemplate } from "@/lib/templates";
 import { timeAgo } from "@/lib/useSpaceSync";
@@ -625,7 +625,7 @@ function CreateCard({ onCreate }: { onCreate: () => void }) {
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
 export default function WorkflowDashboard() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const spaces = useWorkflowStore((s) => s.spaces);
   const createSpace = useWorkflowStore((s) => s.createSpace);
   const switchSpace = useWorkflowStore((s) => s.switchSpace);
@@ -636,7 +636,7 @@ export default function WorkflowDashboard() {
 
   const openSpace = (id: string) => {
     switchSpace(id);
-    router.push(`/workflow/${id}`);
+    navigate(`/workflow/${id}`);
   };
 
   const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -664,7 +664,7 @@ export default function WorkflowDashboard() {
           : `Imported "${wf.name}" — ${wf.assetCount} asset(s)`,
         wf.skipped > 0 ? "info" : "success",
       );
-      router.push(`/workflow/${newId}`);
+      navigate(`/workflow/${newId}`);
     } catch (err) {
       addToast(`Import failed: ${(err as Error).message}`, "error");
     } finally {
@@ -675,7 +675,7 @@ export default function WorkflowDashboard() {
   const handleCreate = () => {
     createSpace(`Space ${spaces.length + 1}`);
     const newId = useWorkflowStore.getState().activeSpaceId;
-    router.push(`/workflow/${newId}`);
+    navigate(`/workflow/${newId}`);
   };
 
   const TEMPLATE_NAME = "UGC Template";
@@ -689,7 +689,7 @@ export default function WorkflowDashboard() {
     }
     createSpace(TEMPLATE_NAME, makeUGCTemplate());
     const newId = useWorkflowStore.getState().activeSpaceId;
-    router.push(`/workflow/${newId}`);
+    navigate(`/workflow/${newId}`);
   };
 
   const handleLoadTemplate = () => spawnFreshTemplate();

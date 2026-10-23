@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import NextImage from "next/image";
+import NextImage from "@/components/ui/img";
 import { Handle, Position, NodeProps, Node, useUpdateNodeInternals } from "@xyflow/react";
 import CornerResizer from "./CornerResizer";
 import { useWorkflowStore, NodeData } from "@/lib/store";
@@ -248,9 +248,8 @@ export default function ImageInputNode({ id, data, selected }: NodeProps<ImageIn
         >
           {/* Layer 1 — base image */}
           {baseSrc && (
-            // Use <NextImage> only for confirmed R2 CDN URLs — third-party URLs skip
-            // next/image optimization because /_next/image fetches server-side and fails
-            // for URLs that have auth, IP allowlists, or expiry (e.g. Replicate links).
+            // The stored URL (r2Url) renders through the shared <Img> component;
+            // any other source falls back to a plain <img>.
             baseSrc === (data.r2Url as string | undefined) ? (
               <NextImage
                 ref={nodeImgRef}
@@ -265,7 +264,6 @@ export default function ImageInputNode({ id, data, selected }: NodeProps<ImageIn
                 }}
               />
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 ref={nodeImgRef}
                 src={baseSrc}
@@ -309,7 +307,6 @@ export default function ImageInputNode({ id, data, selected }: NodeProps<ImageIn
                   onLoad={() => requestAnimationFrame(() => requestAnimationFrame(() => setTopReady(true)))}
                 />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={topSrc}
                   alt=""
@@ -407,7 +404,6 @@ export default function ImageInputNode({ id, data, selected }: NodeProps<ImageIn
               onClick={(e) => e.stopPropagation()}
             >
               {/* Layer 1: full-res image */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={canonicalSrc}
                 alt="Full quality"
@@ -417,7 +413,6 @@ export default function ImageInputNode({ id, data, selected }: NodeProps<ImageIn
 
               {/* Layer 2: blur overlay — uses the already-cached node image, fades out once full-res loads */}
               {blurSrc && (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={blurSrc}
                   alt=""

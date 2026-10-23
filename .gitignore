@@ -13,10 +13,6 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
 # production
 /build
 
@@ -34,35 +30,14 @@ yarn-error.log*
 .env*
 !.env.example
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
-next-env.d.ts
-.job-store.json
-.codex-login-store.json
 
-# Guest mode — local DB and generated media
+# Desktop-era dev database (read by scripts/export-desktop-data.mjs)
 /data/*.json
 /data/*.db
 /data/*.db-shm
 /data/*.db-wal
-
-# Tauri desktop build artifacts
-/src-tauri/target/
-/src-tauri/loader/target/
-/src-tauri/gen/
-/src-tauri/server/
-/src-tauri/binaries/
-# Mobile icon sets Tauri regenerates on build — desktop-only project
-/src-tauri/icons/android/
-/src-tauri/icons/ios/
-/src-tauri/icons/Square*Logo.png
-/src-tauri/icons/StoreLogo.png
-# Signing / notarization secrets
-/scripts/desktop/sign.env
-/src-tauri/.node-cache/
 
 # vite
 /dist

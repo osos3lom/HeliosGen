@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Image from "@/components/ui/img";
+import { useNavigate } from "react-router";
 import { useWorkflowStore, Toast } from "@/lib/store";
 
 const COLORS: Record<Toast["type"], { bg: string; border: string; icon: string }> = {
@@ -147,7 +147,7 @@ function SimpleToastItem({ toast, onDismiss, onClick }: { toast: Toast; onDismis
 
 function ToastItem({ toast }: { toast: Toast }) {
   const removeToast = useWorkflowStore((s) => s.removeToast);
-  const router = useRouter();
+  const navigate = useNavigate();
   const isRich = !!(toast.title && toast.preview);
   const dismissDuration = isRich ? null : toast.href ? 8000 : 4000;
 
@@ -160,7 +160,7 @@ function ToastItem({ toast }: { toast: Toast }) {
   function handleClick() {
     if (toast.href) {
       removeToast(toast.id);
-      router.push(toast.href);
+      navigate(toast.href);
     }
   }
 

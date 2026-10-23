@@ -1,6 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useNavigate, useLocation, useSearchParams } from "react-router";
 import { createPortal } from "react-dom";
 import { IMAGE_MODELS, VIDEO_MODELS, AZURE_POPULAR_SIZES, validateAzureCustomSize } from "@/lib/modelConfig";
 import { PROVIDERS, getModelProvider, setModelProvider, modelHasProviderChoice, type ProviderId } from "@/lib/providers";
@@ -576,9 +576,9 @@ function reorderAndRenumberTags(
 
 function GalleryInner() {
   const { state, isMobile } = useSidebar();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
   const rawTab = searchParams.get("tab");
   const tab = (rawTab === "videos" ? "videos" : "images") as Tab;
   const rawSource = searchParams.get("source");
@@ -2687,7 +2687,7 @@ function GalleryInner() {
                 setSourceFilter(src);
                 const params = new URLSearchParams(searchParams.toString());
                 params.set("source", src);
-                router.replace(`${pathname}?${params.toString()}`);
+                navigate(`${pathname}?${params.toString()}`, { replace: true });
               }}
               style={{
                 display: "flex",
@@ -2784,6 +2784,8 @@ function GalleryInner() {
       </div>}
 
       {/* ── Grid ── */}
+      {/* The logged-out view is switched off in this local-only app. */}
+      {/* eslint-disable-next-line no-constant-condition */}
       {false ? <GalleryLoggedOut tab={tab} /> : <div ref={gridOuterRef} style={{ flex: 1, overflowY: "auto", paddingBottom: "260px", display: "flex", flexDirection: "column", userSelect: marqueeRect ? "none" : undefined, cursor: marqueeRect ? "crosshair" : undefined }} onMouseDown={e => {
         if (e.button !== 0) return;
         const target = e.target as HTMLElement;
@@ -3427,7 +3429,6 @@ function GalleryInner() {
                   const isDragging = draggingId === img.id;
                   return (
                     <div key={img.id} onMouseDown={e => e.preventDefault()} onPointerDown={e => { if (refImages.length <= 1 || img.uploading || img.error) return; _reorderDragItem = { id: img.id, listTarget: "refImage" }; _reorderOverId = null; setDraggingId(img.id); }} onPointerEnter={() => { if (!_reorderDragItem || _reorderDragItem.id === img.id || _reorderDragItem.listTarget !== "refImage") return; _reorderOverId = img.id; setReorderOverId(img.id); }} onPointerUp={e => { const info = _reorderDragItem; if (!info || info.listTarget !== "refImage") return; e.stopPropagation(); if (_reorderOverId) e.preventDefault(); const target = _reorderOverId ?? img.id; handleReorderDrop(target, "refImage"); }} onMouseEnter={() => { if (!draggingId) setHoveredRefId(img.id); }} onMouseLeave={() => setHoveredRefId(null)} onClick={() => { if (_reorderJustDropped) { _reorderJustDropped = false; return; } if (!img.uploading && !img.error && !draggingId) setRefPreview({ url: img.objectUrl, mediaKind: "image" }); }} onDragOver={e => { if (!e.dataTransfer.types.includes("application/x-gallery-item")) return; e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = "copy"; setDragOverSlotKey(`refimg-filled-${img.id}`); }} onDragLeave={() => setDragOverSlotKey(null)} onDrop={e => handleGalleryItemDrop(e, "refImage", "image")} style={{ position: "relative", width: "64px", height: "64px", borderRadius: "8px", overflow: "hidden", background: "#1A1C1F", flexShrink: 0, touchAction: refImages.length > 1 ? "none" : undefined, transition: "border 120ms, box-shadow 120ms, opacity 120ms", border: img.error ? "1px solid rgba(248,113,113,0.4)" : dragOverSlotKey === `refimg-filled-${img.id}` ? "2.5px solid #2DD4BF" : taggedImages.some(t => t.refId === img.id) ? "2.5px solid #10b981" : "1px solid rgba(255,255,255,0.08)", boxShadow: dragOverSlotKey === `refimg-filled-${img.id}` ? "0 0 0 3px rgba(45,212,191,0.25)" : undefined, cursor: (!img.uploading && !img.error) ? (refImages.length > 1 ? (draggingId === img.id ? "grabbing" : "grab") : "zoom-in") : "default", animation: isRemoving ? "none" : (isDragging ? "none" : "refImgIn 260ms cubic-bezier(0.16,1,0.3,1) backwards"), opacity: isDragging ? 0.3 : undefined, ...(isRemoving ? { transition: "opacity 170ms, transform 170ms", opacity: 0, transform: "translateY(-10px) scale(0.92)" } : {}) }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={thumbSrc(img.objectUrl, snapWidth(64))} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                       {isHovered && !img.uploading && !img.error && (
                         <div onClick={e => { if (_reorderJustDropped || draggingId) { _reorderJustDropped = false; e.stopPropagation(); return; } e.stopPropagation(); setRefPreview({ url: img.objectUrl, mediaKind: "image" }); }} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "zoom-in" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></div>
@@ -3519,7 +3520,6 @@ function GalleryInner() {
                       const el = slot.element; const thumb = el.imageUrls[0]; const hovId = `elem-${el.id}`;
                       return (
                         <div key={el.id} onMouseEnter={() => setHoveredRefId(hovId)} onMouseLeave={() => setHoveredRefId(null)} style={{ position: "relative", width: "64px", height: "64px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, background: "#1a1c1f", border: "1px solid rgba(255,255,255,0.12)" }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={thumb} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                           {hoveredRefId === hovId && (
                             <div onClick={() => setRefPreview({ url: thumb, mediaKind: "image" })} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "zoom-in", zIndex: 1 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></div>
@@ -4515,7 +4515,6 @@ function GalleryInner() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={thumbSrc(ref.objectUrl, snapWidth(128))}
                   alt=""
@@ -4567,7 +4566,6 @@ function GalleryInner() {
                 : `${Math.min(200, window.innerHeight - chipPreview.rect.bottom - 16)}px`,
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={thumbSrc(chipPreview.tag.url, snapWidth(256))}
               alt=""
@@ -4630,7 +4628,6 @@ function GalleryInner() {
                 style={{ display: "block", maxWidth: "90vw", maxHeight: "90vh" }}
               />
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={refPreview.url}
                 alt=""
@@ -4946,7 +4943,6 @@ function ElementPickerModal({
                       }}
                       onMouseEnter={e => { if (!isAttached && !atMax) e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; }}
                       onMouseLeave={e => { if (!isAttached) e.currentTarget.style.borderColor = "transparent"; }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={el.imageUrls[0]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                       {el.imageUrls.length > 1 && (
                         <div style={{ position: "absolute", top: "5px", left: "5px", background: "rgba(0,0,0,0.65)", borderRadius: "4px", padding: "1px 5px", fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>
@@ -4994,7 +4990,6 @@ function ElementPickerModal({
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" as const }}>
                 {createImages.map((img, i) => (
                   <div key={img.id} style={{ position: "relative", width: "72px", height: "72px", borderRadius: "8px", overflow: "hidden", border: img.error ? "1px solid rgba(248,113,113,0.4)" : "1px solid rgba(255,255,255,0.12)", background: "#1a1c1f", flexShrink: 0 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={img.objectUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                     {img.uploading && (
                       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -5958,7 +5953,6 @@ function GalleryCard({
       ) : (
         <>
           {(!shouldLoad || !imgLoaded) && <div className="gallery-shimmer" />}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             key={displayUrl}
             src={shouldLoad ? (isThumbFailed ? displayUrl : thumbSrc(displayUrl, stableSnap)) : undefined}
@@ -6258,7 +6252,7 @@ function syntaxHighlightJson(
       parts.push(<span key={k++} style={color ? { color } : undefined}>{text}</span>);
     }
   };
-  const re = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(true|false|null)|([{}\[\],])/g;
+  const re = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(true|false|null)|([{}[\],])/g;
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(json)) !== null) {
@@ -6400,7 +6394,6 @@ function renderLightboxPrompt(
         color: "#ffffff", lineHeight: "20px",
       }}>
         {imgUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={thumbSrc(imgUrl, snapWidth(20))} alt="" style={{ width: 20, height: 20, borderRadius: 4, objectFit: "cover", flexShrink: 0 }} />
         )}
         Image {n}
@@ -6599,7 +6592,6 @@ function Lightbox({ item, thumbUrl, onClose, onCopyPrompt, onPrev, onNext }: { i
           ) : (
             <>
               {/* Thumbnail placeholder — already in browser cache, shows instantly */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img key={`thumb-${lightboxUrl}`} src={placeholderSrc} alt="" aria-hidden style={{
                 display: "block",
                 maxHeight: zoomed ? "100vh" : "calc(100vh - 48px)",
@@ -6609,7 +6601,6 @@ function Lightbox({ item, thumbUrl, onClose, onCopyPrompt, onPrev, onNext }: { i
                 transition: "opacity 400ms ease",
               }} />
               {/* Full-res — opacity:1 immediately so browser paints rows progressively */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img key={`full-${lightboxUrl}`} src={lightboxUrl} alt={item.prompt ?? ""} onLoad={e => { setFullLoaded(true); const img = e.currentTarget; if (img.naturalWidth && img.naturalHeight) setResolution(`${img.naturalWidth} × ${img.naturalHeight}`); }} style={{
                 position: "absolute", inset: 0, display: "block", width: "100%", height: "100%", objectFit: "contain",
               }} />
@@ -6676,7 +6667,6 @@ function Lightbox({ item, thumbUrl, onClose, onCopyPrompt, onPrev, onNext }: { i
               <div style={{ padding: "14px 16px 0", display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 {item.referenceImageUrls.map((url, i) => (
                   <div key={i} style={{ position: "relative", width: 76, height: 68, borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)", flexShrink: 0 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={thumbSrc(url, snapWidth(76))} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                     <div style={{
                       position: "absolute", bottom: 4, right: 4,

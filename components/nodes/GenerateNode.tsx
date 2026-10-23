@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState, Fragment } from "react";
 import { useAnimatedPopup } from "@/lib/useAnimatedPopup";
 import { createPortal } from "react-dom";
 import GenerateButton from "@/components/nodes/GenerateButton";
-import Image from "next/image";
+import Image from "@/components/ui/img";
 import { Handle, Position, NodeProps, Node, useUpdateNodeInternals } from "@xyflow/react";
 import CornerResizer from "./CornerResizer";
 import NodeActionBar from "./NodeActionBar";
@@ -1490,7 +1490,6 @@ export default function GenerateNode({ id, data, selected }: NodeProps<GenerateN
             onClick={(e) => e.stopPropagation()}
           >
             {/* Full-res image */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={data.imageUrl as string}
               alt="Full quality"
@@ -1499,7 +1498,6 @@ export default function GenerateNode({ id, data, selected }: NodeProps<GenerateN
             />
             {/* Blur placeholder */}
             {blurSrc && (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={blurSrc}
                 alt=""

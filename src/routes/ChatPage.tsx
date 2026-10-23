@@ -2,14 +2,14 @@
 
 import React, { useCallback, useEffect, useRef, useState, Suspense } from "react";
 import { flushSync } from "react-dom";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigate, useSearchParams } from "react-router";
 import { useChatSessionStore, type StoredMessage, type ChatSession } from "@/lib/chatSessionStore";
 import { getToken } from "@/lib/galleryUtils";
 import { MODEL_GROUPS, MODELS, type ModelId } from "@/lib/models";
 import { SYSTEM_PROMPT } from "@/lib/systemPrompt";
 import { Send, ChevronUp, Copy, Check } from "lucide-react";
 import { motion } from "motion/react";
-import Image from "next/image";
+import Image from "@/components/ui/img";
 import DotCanvasBackground from "@/components/ui/DotCanvasBackground";
 import TypewriterHeading from "@/components/ui/TypewriterHeading";
 import { useWorkflowStore } from "@/lib/store";
@@ -601,8 +601,8 @@ function ChatWindow({
 // ── Inner page (uses useSearchParams) ────────────────────────────────────────
 
 function ChatInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const idParam = searchParams.get("id");
 
   const { sessions, createSession, upsertSession, preferredModel, setPreferredModel } = useChatSessionStore();
@@ -624,7 +624,7 @@ function ChatInner() {
   function handleLandingSubmit(text: string) {
     const id = createSession(landingModel, text.slice(0, 50));
     setPendingMessage(text);
-    router.push(`/chat?id=${id}`);
+    navigate(`/chat?id=${id}`);
   }
 
   if (!hydrated) {

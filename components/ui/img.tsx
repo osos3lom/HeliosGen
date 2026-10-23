@@ -1,6 +1,7 @@
-// Transitional stand-in for `next/image`: a plain <img>. There is no image
-// optimizer on a static host, so `sizes`/`quality`/`priority` are dropped
-// and `fill` becomes absolute positioning, matching Next's layout.
+// Image element with the props the app's call sites use (formerly next/image).
+// There is no image optimizer on a static host: `sizes`/`quality` are ignored,
+// `priority` maps to eager loading, `fill` becomes absolute positioning, and
+// root-absolute paths are resolved against Vite's base via assetUrl().
 import type { CSSProperties, ImgHTMLAttributes, Ref } from "react";
 import { assetUrl } from "@/src/lib/assetUrl";
 

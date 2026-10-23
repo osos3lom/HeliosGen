@@ -1346,7 +1346,6 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
                       </button>
                     </div>
                   ) : (
-                    // eslint-disable-next-line jsx-a11y/media-has-caption
                     <video
                       ref={(el) => {
                         if (el) { videoRefs.current.set(i, el); if (i === currentGenIdx) (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el; }
@@ -1410,7 +1409,6 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
 
           {/* Frame view overlay — shown when toggle is set to "frame" */}
           {viewMode === "frame" && displayFrameUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={displayFrameUrl}
               alt="Captured frame"
@@ -2046,7 +2044,6 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
             style={{ transform: lightboxVisible ? "scale(1)" : "scale(0.95)", boxShadow: "0 0 0 8px #3a3a3a" }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
             <video
               src={data.videoUrl as string}
               controls

@@ -91,7 +91,7 @@ export function saveAzureTextModelName(name: string) {
 
 /* ─── Nav items ─────────────────────────────────────────────────────────────── */
 
-const IS_DEBUG = process.env.NEXT_PUBLIC_DEBUG === "true";
+const IS_DEBUG = import.meta.env.VITE_DEBUG === "true";
 
 type NavId = "api-keys" | "image-models" | "video-models" | "text-models" | "local-models" | "data" | "debug";
 
@@ -1096,7 +1096,7 @@ function DebugPanel() {
       <div>
         <h2 style={{ fontSize: "15px", fontWeight: 600, color: "rgba(255,255,255,0.9)", margin: 0, marginBottom: "4px" }}>Debug</h2>
         <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)", margin: 0 }}>
-          Only visible when <code style={{ fontFamily: "monospace", color: "rgba(251,146,60,0.8)" }}>NEXT_PUBLIC_DEBUG=true</code>
+          Only visible when <code style={{ fontFamily: "monospace", color: "rgba(251,146,60,0.8)" }}>VITE_DEBUG=true</code>
         </p>
       </div>
 

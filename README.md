@@ -7,55 +7,44 @@
 </p>
 
 <p align="center">
-  <strong>Build AI image & video pipelines visually.</strong><br/>
+  <strong>Build AI image & video pipelines visually — right in your browser.</strong><br/>
   Chain prompts, models, reference images, and automations on an infinite canvas.
 </p>
 
 ---
 
-# ⬇️ Download
+# 🌐 Open the app
 
-**HeliosGen is a desktop app.** Grab the latest build for your OS from the
-releases page — no account, no server, no cloud setup:
+### 👉 **[osos3lom.github.io/HeliosGen](https://osos3lom.github.io/HeliosGen/)**
 
-### 👉 **[Download from the Releases page](https://github.com/SegFault42/HeliosGen/releases)**
+HeliosGen runs entirely in your browser — nothing to install, no account, no
+server. It's a static site: your keys, library and workflows stay on your
+device, and generation requests go straight from your browser to the provider.
 
-| OS | File |
-| --- | --- |
-| **macOS** (Apple Silicon) | `HeliosGen_<version>_aarch64.dmg` |
-| **Windows** | 🙋 **looking for a contributor to build & submit** — see below |
-| **Linux** | 🙋 **looking for a contributor to build & submit** — see below |
-
-> Only the builds actually attached to the latest release are available. macOS
-> is published today. **Tauri can't cross-compile, so Windows and Linux builds
-> need someone on those platforms** — if you can run `npm run desktop:build` on
-> Windows or Linux (see the **Build from source** section below), please open a
-> PR or attach the artifacts to an issue and we'll add them to the release.
-
-The app is **not code-signed** yet:
-
-- **macOS** — right-click the app → **Open** (once), or run
-  `xattr -cr /Applications/HeliosGen.app`.
-- **Windows** — SmartScreen: **More info → Run anyway**.
+| Browser | Cloud models (kie.ai / Azure) | On-device models (WebGPU) |
+| --- | --- | --- |
+| Chrome / Edge 113+ | ✅ | ✅ |
+| Safari 26+ | ✅ | ✅ |
+| Firefox | ✅ | ⚠️ Depends on version and OS — local nodes show a notice when WebGPU is unavailable |
 
 ---
 
 ## 🚀 First run
 
-1. Launch HeliosGen.
-2. Open **Settings → API Keys** and paste your **[kie.ai](https://kie.ai?ref=25abb3f2236cbff9780ab9c2f84479ec) API key**.
-3. Start generating.
+1. Open the app.
+2. Go to **Settings → API Keys** and paste your **[kie.ai](https://kie.ai?ref=25abb3f2236cbff9780ab9c2f84479ec) API key**.
+3. Start generating — or skip the key and use the **on-device** nodes, which need no account at all.
 
-Everything stays on your machine. Generations, uploads, folders, workflows and
-settings live in a local database; media is saved to a local folder:
+### Where your data lives
 
-| OS | Data location |
-| --- | --- |
-| macOS | `~/Library/Application Support/cash.sdd.helios.desktop/` |
-| Windows | `%APPDATA%\cash.sdd.helios.desktop\` |
-| Linux | `~/.local/share/cash.sdd.helios.desktop/` |
+Everything is stored in your browser, for this site only:
 
-Delete that folder to reset the app.
+- **IndexedDB** — generations, uploads, folders, workflows and settings (including API keys).
+- **Origin Private File System** — generated and uploaded images/videos, plus on-device model weights.
+
+API keys are only ever sent to their own provider. The app asks the browser to
+keep this storage persistent; clearing the site's data in your browser resets
+the app. Use the canvas toolbar's **Export workflow (.zip)** button to keep portable copies of workflows.
 
 ---
 
@@ -90,6 +79,8 @@ Delete that folder to reset the app.
   <img width="872" height="502" alt="Prompt assistant interface" src="https://github.com/user-attachments/assets/17ba972c-bd8a-49a7-b367-4ef906fe3e17" />
 </p>
 
+---
+
 # ✨ HeliosGen
 
 HeliosGen is a free & open source visual AI workflow builder for image and video generation.
@@ -99,18 +90,18 @@ Build reusable AI pipelines with:
 - multi-model generation,
 - reference images,
 - automation chains,
-- all running 100% locally on your machine.
+- cloud models through your own kie.ai key, **and** models that run on your own GPU.
 
 No subscriptions.  
 No disappearing credits.  
 No vendor lock-in.  
-No cloud, no accounts — just a local app and your own kie.ai key.
+No backend, no accounts — a web page, your browser, and your own key.
 
 ---
 
 # 💳 Credits
 
-HeliosGen now works with <a href="https://kie.ai?ref=25abb3f2236cbff9780ab9c2f84479ec" target="_blank">kie.ai</a>.
+HeliosGen works with <a href="https://kie.ai?ref=25abb3f2236cbff9780ab9c2f84479ec" target="_blank">kie.ai</a>.
 
 All credits are purchased directly on your own account and never expire.
 
@@ -120,42 +111,73 @@ That means:
 - no subscription lock-in,
 - and full ownership of your usage.
 
-You only pay for what you generate.
+You only pay for what you generate — and on-device generation is free.
 
 ---
 
 # 🚀 Features
 
 - Infinite node-based canvas
-- AI image & video generation
+- AI image & video generation (cloud) and on-device generation (WebGPU)
 - Drag-and-connect workflow system
-- Multi-model pipelines
-- Reference image support
-- Parallel & sequential pipeline execution
-- Real-time generation history
-- 100% local — your data never leaves your machine
+- Multi-model pipelines, parallel & sequential execution
+- Reference image, video and audio support
+- Frame extraction and video trimming in the browser (ffmpeg.wasm)
+- Real-time generation history and gallery with folders
+- Local-first — your library never leaves your device
 - Bring your own kie.ai key
-- Modern responsive UI
 
 ---
 
 # ⚡ Supported Models
 
-## Images
-- GPT Image 2 (OpenAI)
+## Images (cloud)
+- GPT Image 2 / 2.5 (OpenAI) — via kie.ai, or your own Azure AI Foundry deployment
 - Nano Banana / Nano Banana 2 / Nano Banana 2 Lite / Nano Banana Pro (Google)
 - Seedream 5.0 Lite / Pro (Seedream)
 - Z-Image (Z-AI)
 - Grok Imagine (X)
 
-## Videos
+## Videos (cloud)
 - Veo 3.1 Lite / Fast / Quality, Gemini Omni Video (Google)
 - Kling 3.0, Kling 3.0 Turbo, Motion Control 2.6 / 3.0 (Kling)
-- Seedance 2.0 / Fast / Mini (Bytedance)
+- Seedance 2.0 / Fast / Mini / 2.5 (Bytedance)
+- MiniMax H3
 - Grok Imagine, Grok Imagine 1.5 preview (X)
 - HappyHorse (Alibaba)
 
-More models are coming.
+## On-device (WebGPU) — free, private, works offline once downloaded
+
+| Node | What it does | Models |
+| --- | --- | --- |
+| **Local LLM** | Expands an idea into a detailed prompt, or answers free-form | Qwen2.5 0.5B / 1.5B, Llama 3.2 3B (WebLLM) |
+| **Local Image** | Text-to-image, 512×512, one step | SD-Turbo (ONNX Runtime Web) |
+| **Local Tools** | Remove background · upscale 2×/4× · describe an image | RMBG-1.4, Swin2SR, Florence-2 (Transformers.js) |
+
+Weights download the first time a model is used (from ~50 MB for a tool up to
+~2.5 GB for SD-Turbo) and are cached by the browser. Manage them in
+**Settings → Local Models**. On integrated GPUs, prefer the smaller LLMs; tools
+fall back to the CPU when a GPU can't run them.
+
+---
+
+# 🖥️ Moving from the desktop app
+
+Earlier versions were a desktop app (Tauri + a local Next.js server). To bring
+that library into the browser:
+
+1. Quit the desktop app.
+2. In a checkout of this repo, run `pnpm install` once, then:
+   ```bash
+   pnpm export-desktop-data
+   ```
+   It finds the desktop data folder automatically (or pass `--data-dir`) and
+   writes `heliosgen-export-<date>.zip`. API keys are left out unless you add
+   `--include-keys`.
+3. In the app, open **Settings → Data → Import desktop data** and choose the zip.
+
+Importing only adds — anything already in the browser is kept, so it's safe to
+run again. Chat history isn't part of the export.
 
 ---
 
@@ -163,120 +185,46 @@ More models are coming.
 
 | Layer | Technology |
 |---|---|
-| Desktop shell | Tauri 2 (Rust) |
-| App | Next.js + React + TypeScript (bundled Node sidecar) |
-| Database | SQLite (local) |
-| Storage | Local disk |
-| AI Backend | kie.ai |
+| App | React 19 + TypeScript, built with Vite, hash routing (React Router) |
+| Canvas | React Flow (`@xyflow/react`) + Zustand |
+| "API" | In-browser handlers behind `apiFetch` (no server) |
+| Database | IndexedDB (Dexie) |
+| Media | Origin Private File System, served by a service worker |
+| On-device AI | WebLLM, ONNX Runtime Web, Transformers.js — in Web Workers |
+| Video tools | ffmpeg.wasm |
+| Cloud AI | kie.ai (and optionally Azure AI Foundry) |
+| Hosting | GitHub Pages via GitHub Actions |
 
 ---
 
-# 🤖 Codex CLI (optional — alternate GPT Image 2 backend)
+# 🛠️ Develop
 
-Instead of routing GPT Image 2 through kie.ai credits, HeliosGen can generate through your own ChatGPT Codex subscription via [`codex-imagegen-cli`](https://github.com/jdmnk/codex-imagegen-cli). The desktop app picks up `codex` from your `PATH` automatically; if it's missing, the feature just shows **NOT CONFIGURED** and everything else keeps working.
-
-Requirements:
-- A ChatGPT Plus/Pro/Team/Enterprise account with Codex access
-- [`codex`](https://github.com/openai/codex) CLI installed on your machine
-- [`uv`](https://docs.astral.sh/uv/) (Python package manager)
-
-### 1. Install the Codex CLI
+Requires Node 22+ and pnpm 9.
 
 ```bash
-# macOS
-brew install codex
-
-# or, cross-platform
-npm install -g @openai/codex
+pnpm install
+pnpm dev          # http://localhost:5173
 ```
 
-### 2. Install codex-imagegen-cli
-
-```bash
-git clone https://github.com/jdmnk/codex-imagegen-cli.git
-cd codex-imagegen-cli
-uv sync --dev
-uv tool install -e .
-```
-
-This installs the `codex-imagegen` binary — make sure it's on your `PATH`.
-
-### 3. Log in
-
-Either:
-- run `codex login` in a terminal (opens a browser to sign in), **or**
-- open the app → **Settings → API Keys → Codex CLI → Connect Codex**, which walks you through a device-code login — visit the printed URL and enter the code, no terminal needed.
-
-> ⚠️ Starting a new login (either way) immediately invalidates any existing session on that machine — the CLI clears old credentials the moment a login attempt begins, whether or not it's ever completed. Only start one when the status badge below shows **NOT CONFIGURED**.
-
-### 4. Enable it for GPT Image 2
-
-In **Settings → Image Models**, set GPT Image 2's provider toggle to **Codex CLI**. The status badge in **Settings → API Keys** shows **READY** once both the CLI and login are in place.
-
----
-
-# 🛠️ Build from source
-
-Prefer to build it yourself, or need a platform that isn't on the releases page
-yet? The whole app builds from this repo.
-
-Tauri does **not** cross-compile — build on the OS you want to target. Run
-`npm run desktop:build` on a Mac for the macOS build, on Windows for Windows,
-on Linux for Linux.
-
-> **Want to help ship Windows / Linux builds?** Build on that OS and send the
-> artifacts (PR or issue attachment) — they'll be added to the next release,
-> with credit.
-
-## Prerequisites (one-time, all platforms)
-
-| Tool | Notes |
+| Script | Does |
 | --- | --- |
-| **Node 22+** | The bundled server uses `node:sqlite`. `nvm use 22`. |
-| **Rust** | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
-| **Tauri system deps** | See <https://v2.tauri.app/start/prerequisites/> |
+| `pnpm dev` | Vite dev server |
+| `pnpm build` | Static build into `dist/` (set `VITE_BASE=/<repo>/` for a project site) |
+| `pnpm preview` | Serve the built `dist/` |
+| `pnpm typecheck` / `pnpm lint` | The checks CI runs |
+| `pnpm export-desktop-data` | Export a desktop-app library for import |
 
-Platform-specific system deps:
+See [`AGENTS.md`](AGENTS.md) for how the code is organised.
 
-- **macOS** — Xcode Command Line Tools: `xcode-select --install`
-- **Windows** — [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
-  (Desktop development with C++) and [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/)
-  (preinstalled on Windows 11)
-- **Linux** — `webkit2gtk-4.1`, `librsvg2`, `build-essential`, `curl`, `wget`,
-  `file`, `libssl-dev`, `libayatana-appindicator3-dev` (Debian/Ubuntu package
-  names; see the Tauri prerequisites page for other distros)
+## Deploy your own copy
 
-## Build
+1. Fork the repo.
+2. In the fork: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+3. Push to `main` (or run the **Deploy to GitHub Pages** workflow). The site
+   appears at `https://<you>.github.io/<repo>/`.
 
-```bash
-git clone https://github.com/SegFault42/HeliosGen
-cd HeliosGen
-npm install
-npm run desktop:build
-```
-
-Artifacts land in `src-tauri/target/release/bundle/`:
-
-| OS | Output |
-| --- | --- |
-| macOS | `macos/HeliosGen.app`, `dmg/HeliosGen_<ver>_<arch>.dmg` |
-| Windows | `msi/HeliosGen_<ver>_x64_en-US.msi`, `nsis/HeliosGen_<ver>_x64-setup.exe` |
-| Linux | `deb/`, `rpm/`, `appimage/HeliosGen_<ver>_amd64.AppImage` |
-
-The macOS build is **unsigned** — on first launch Gatekeeper blocks it.
-Right-click → Open, or `xattr -cr "src-tauri/target/release/bundle/macos/HeliosGen.app"`.
-
-## Develop (hot reload)
-
-```bash
-npm run desktop:dev
-```
-
-Runs `next dev` and `tauri dev` together. The first run compiles the Rust shell
-(~1–2 min).
-
-See [`DESKTOP.md`](DESKTOP.md) for architecture, data locations, and signing &
-notarization.
+`.github/workflows/deploy.yml` typechecks, lints and builds with the right base
+path; `ci.yml` runs the same checks on pull requests.
 
 ---
 
@@ -302,4 +250,3 @@ MIT License
 <p align="center">
   Built for creators building the future of AI workflows.
 </p>
-
