@@ -14,6 +14,7 @@ import DotCanvasBackground from "@/components/ui/DotCanvasBackground";
 import TypewriterHeading from "@/components/ui/TypewriterHeading";
 import { useWorkflowStore } from "@/lib/store";
 import { loadAzureBaseUrl, loadAzureTextDeployment, loadAzureTextModelName } from "@/components/SettingsModal";
+import { apiFetch } from "@/lib/api/client";
 
 // ── Logo ──────────────────────────────────────────────────────────────────────
 
@@ -358,7 +359,7 @@ function ChatWindow({
         azureModelName:  loadAzureTextModelName(),
       } : {};
 
-      const res = await fetch("/api/assistant", {
+      const res = await apiFetch("/api/assistant", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

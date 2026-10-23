@@ -7,6 +7,7 @@ import { useAnimatedPopup } from "@/lib/useAnimatedPopup";
 import CornerResizer from "./CornerResizer";
 import { useGeneratingBorderAnimation } from "@/lib/useGeneratingBorderAnimation";
 import { useReadOnly } from "@/lib/readOnlyContext";
+import { apiFetch } from "@/lib/api/client";
 
 type AssistantNodeType = Node<NodeData, "assistantNode">;
 
@@ -139,7 +140,7 @@ export default function AssistantNode({ id, data, selected }: NodeProps<Assistan
 
     try {
       const assistantHeaders: Record<string, string> = { "Content-Type": "application/json" };
-      const res = await fetch("/api/assistant", {
+      const res = await apiFetch("/api/assistant", {
         method: "POST",
         headers: assistantHeaders,
         body: JSON.stringify({

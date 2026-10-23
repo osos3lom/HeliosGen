@@ -11,6 +11,7 @@
 import { makeZip, type ZipEntry } from "./makeZip";
 import type { Space } from "./store";
 import { isLocalMediaPath } from "./browser/media";
+import { apiFetch } from "@/lib/api/client";
 
 export const WORKFLOW_FORMAT = "heliosgen-workflow";
 export const WORKFLOW_FORMAT_VERSION = 1;
@@ -63,7 +64,7 @@ async function fetchAsset(url: string): Promise<{ bytes: Uint8Array; contentType
     const { bytes, contentType } = dataUrlToBytes(url);
     return { bytes, contentType };
   }
-  const res = await fetch(`/api/download?url=${encodeURIComponent(url)}&filename=asset`);
+  const res = await apiFetch(`/api/download?url=${encodeURIComponent(url)}&filename=asset`);
   if (!res.ok) throw new Error(`fetch ${url} → ${res.status}`);
   const buf = await res.arrayBuffer();
   return { bytes: new Uint8Array(buf), contentType: res.headers.get("content-type") ?? "" };

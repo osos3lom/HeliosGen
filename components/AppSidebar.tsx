@@ -46,6 +46,7 @@ import {
   Avatar,
   AvatarFallback,
 } from "@/components/ui/avatar";
+import { apiFetch } from "@/lib/api/client";
 
 // ── Deterministic pixel-art avatar ───────────────────────────────────────────
 function fnv1a(str: string): number {
@@ -677,11 +678,11 @@ export function AppSidebar() {
   const setAzureKeySet    = useWorkflowStore((s) => s.setAzureKeySet);
 
   React.useEffect(() => {
-    fetch("/api/settings/kie-key")
+    apiFetch("/api/settings/kie-key")
       .then((r) => r.json())
       .then((d) => setKieKeySet(!!d.hasToken))
       .catch(() => setKieKeySet(null));
-    fetch("/api/settings/azure-key")
+    apiFetch("/api/settings/azure-key")
       .then((r) => r.json())
       .then((d) => setAzureKeySet(!!d.hasToken))
       .catch(() => setAzureKeySet(null));
@@ -690,7 +691,7 @@ export function AppSidebar() {
   React.useEffect(() => {
     const fetchBalance = async () => {
       try {
-        const res = await fetch("/api/credit");
+        const res = await apiFetch("/api/credit");
         if (!res.ok) return;
         const data = await res.json();
         const val = typeof data?.data === "number"

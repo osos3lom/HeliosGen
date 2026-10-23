@@ -6,6 +6,7 @@ import { Handle, Position, NodeProps, Node, useUpdateNodeInternals } from "@xyfl
 import CornerResizer from "./CornerResizer";
 import { useWorkflowStore, NodeData } from "@/lib/store";
 import { sha256Hex } from "@/lib/assetHash";
+import { apiFetch } from "@/lib/api/client";
 
 
 type ImageInputNodeType = Node<NodeData, "imageInputNode">;
@@ -85,7 +86,7 @@ export default function ImageInputNode({ id, data, selected }: NodeProps<ImageIn
         if (src.startsWith("data:") || src.startsWith("http")) {
           (async () => {
             try {
-              const r = await fetch("/api/upload", {
+              const r = await apiFetch("/api/upload", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ dataUrl: src, folder: "uploads", mimeType }),
@@ -113,7 +114,7 @@ export default function ImageInputNode({ id, data, selected }: NodeProps<ImageIn
 
       // ── Cache lookup: skip upload if already in R2 ───────────────────────
       try {
-        const lookupRes = await fetch(`/api/lookup-asset?hash=${hash}`, { headers: authHeaders });
+        const lookupRes = await apiFetch(`/api/lookup-asset?hash=${hash}`, { headers: authHeaders });
         const { cdnUrl } = await lookupRes.json() as { cdnUrl: string | null };
         if (cdnUrl) {
           // Already uploaded — use existing URL directly
@@ -147,7 +148,7 @@ export default function ImageInputNode({ id, data, selected }: NodeProps<ImageIn
           "Content-Type": file.type || "image/jpeg",
           ...authHeaders,
         };
-        const res     = await fetch("/api/upload-asset", { method: "POST", headers: uploadHeaders, body: bytes });
+        const res     = await apiFetch("/api/upload-asset", { method: "POST", headers: uploadHeaders, body: bytes });
         const { cdnUrl } = await res.json() as { cdnUrl?: string };
         if (cdnUrl) {
           updateNodeData(id, { r2Url: cdnUrl, inputImage: cdnUrl });

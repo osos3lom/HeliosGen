@@ -7,6 +7,7 @@ import { arrangeNodes } from "@/lib/arrangeNodes";
 import { usePipelineRunner } from "@/lib/usePipelineRunner";
 import { makeZip } from "@/lib/makeZip";
 import { VIDEO_MODELS } from "@/lib/modelConfig";
+import { apiFetch } from "@/lib/api/client";
 
 export type GroupNodeType = Node<NodeData, "groupNode">;
 
@@ -268,7 +269,7 @@ export default function GroupNode({ id, data, selected }: NodeProps<GroupNodeTyp
     try {
       const entries = await Promise.all(
         assets.map(async ({ url, name }) => {
-          const resp = await fetch(`/api/download?url=${encodeURIComponent(url)}&filename=${name}`);
+          const resp = await apiFetch(`/api/download?url=${encodeURIComponent(url)}&filename=${name}`);
           const buf = await resp.arrayBuffer();
           return { name, data: new Uint8Array(buf) };
         })

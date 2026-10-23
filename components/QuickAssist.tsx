@@ -7,6 +7,7 @@ import { useChatSessionStore } from "@/lib/chatSessionStore";
 import { SYSTEM_PROMPT } from "@/lib/systemPrompt";
 import { useWorkflowStore } from "@/lib/store";
 import { loadAzureBaseUrl, loadAzureTextDeployment, loadAzureTextModelName } from "@/components/SettingsModal";
+import { apiFetch } from "@/lib/api/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -103,7 +104,7 @@ export function QuickAssist() {
         azureDeployment: loadAzureTextDeployment(),
         azureModelName:  loadAzureTextModelName(),
       } : {};
-      const res = await fetch("/api/assistant", {
+      const res = await apiFetch("/api/assistant", {
         method: "POST",
         headers: reqHeaders,
         body: JSON.stringify({

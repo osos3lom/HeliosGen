@@ -6,6 +6,7 @@ import CornerResizer from "./CornerResizer";
 import { useWorkflowStore, NodeData } from "@/lib/store";
 import { VIDEO_MODELS } from "@/lib/modelConfig";
 import { sha256Hex } from "@/lib/assetHash";
+import { apiFetch } from "@/lib/api/client";
 
 type VideoInputNodeType = Node<NodeData, "videoInputNode">;
 
@@ -258,7 +259,7 @@ export default function VideoInputNode({ id, data, selected }: NodeProps<VideoIn
       const bytes = await blob.arrayBuffer();
       const authHeaders: Record<string, string> = {};
 
-      const res  = await fetch("/api/upload-asset", {
+      const res  = await apiFetch("/api/upload-asset", {
         method: "POST",
         headers: { "Content-Type": "image/jpeg", ...authHeaders },
         body: bytes,
@@ -340,7 +341,7 @@ export default function VideoInputNode({ id, data, selected }: NodeProps<VideoIn
       const body = isLastFrame
         ? { videoUrl: vUrl, ...(tEnd !== undefined ? { timeSeconds: tEnd } : { lastFrame: true }) }
         : { videoUrl: vUrl, timeSeconds: tStart ?? 0 };
-      const r = await fetch("/api/extract-frame", { method: "POST", headers, body: JSON.stringify(body) });
+      const r = await apiFetch("/api/extract-frame", { method: "POST", headers, body: JSON.stringify(body) });
       const j = await r.json();
       if (j.cdnUrl) {
         const field = isLastFrame ? "eagerEndFrameUrl" : "eagerStartFrameUrl";
@@ -396,7 +397,7 @@ export default function VideoInputNode({ id, data, selected }: NodeProps<VideoIn
     const authHeaders: Record<string, string> = {};
 
     try {
-      const lookupRes = await fetch(`/api/lookup-asset?hash=${hash}`, { headers: authHeaders });
+      const lookupRes = await apiFetch(`/api/lookup-asset?hash=${hash}`, { headers: authHeaders });
       const { cdnUrl: cached } = await lookupRes.json() as { cdnUrl: string | null };
       if (cached) {
         updateNodeData(id, { videoUrl: cached, videoAspectRatio: undefined, capturedFrameUrl: undefined });
@@ -411,7 +412,7 @@ export default function VideoInputNode({ id, data, selected }: NodeProps<VideoIn
     setUploading(true);
 
     try {
-      const res  = await fetch("/api/upload-asset", {
+      const res  = await apiFetch("/api/upload-asset", {
         method: "POST",
         headers: { "Content-Type": file.type || "video/mp4", ...authHeaders },
         body: bytes,

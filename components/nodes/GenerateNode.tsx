@@ -19,6 +19,7 @@ import { IMAGE_MODELS, AZURE_POPULAR_SIZES, validateAzureCustomSize } from "@/li
 import { PROVIDERS, ProviderId, getModelProvider, setModelProvider, modelHasProviderChoice } from "@/lib/providers";
 import { useGeneratingBorderAnimation } from "@/lib/useGeneratingBorderAnimation";
 import MissingInputWarning from "./MissingInputWarning";
+import { apiFetch } from "@/lib/api/client";
 
 // Derived from config — no hardcoding needed
 const MODELS = IMAGE_MODELS.map((m) => ({ id: m.id, name: m.name, meta: m.provider }));
@@ -325,7 +326,7 @@ export default function GenerateNode({ id, data, selected }: NodeProps<GenerateN
     const filename = `image-${Date.now()}.png`;
     setIsSaving(true);
     try {
-      const resp = await fetch(`/api/download?url=${encodeURIComponent(url)}&filename=${filename}`);
+      const resp = await apiFetch(`/api/download?url=${encodeURIComponent(url)}&filename=${filename}`);
       const blob = await resp.blob();
       const obj = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -505,7 +506,7 @@ export default function GenerateNode({ id, data, selected }: NodeProps<GenerateN
 
     const doPoll = async () => {
       try {
-        const res = await fetch(`/api/job-status?taskId=${taskId}`);
+        const res = await apiFetch(`/api/job-status?taskId=${taskId}`);
         const json = await res.json();
         if (cancelled) return;
 
@@ -586,7 +587,7 @@ export default function GenerateNode({ id, data, selected }: NodeProps<GenerateN
         ? { videoUrl, timeSeconds: trimEnd }
         : { videoUrl, timeSeconds: trimStart ?? 0 };
       try {
-        const r = await fetch("/api/extract-frame", {
+        const r = await apiFetch("/api/extract-frame", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
           body: JSON.stringify(extractBody),
@@ -679,7 +680,7 @@ export default function GenerateNode({ id, data, selected }: NodeProps<GenerateN
     if (debugMode) {
       setLoading(true);
       try {
-        await fetch("/api/generate", {
+        await apiFetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...payload, debugOnly: true }),
@@ -701,7 +702,7 @@ export default function GenerateNode({ id, data, selected }: NodeProps<GenerateN
       setLoading(true);
       updateNodeData(id, { status: "running" });
       try {
-        const res = await fetch("/api/generate", {
+        const res = await apiFetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
           body: JSON.stringify(payload),

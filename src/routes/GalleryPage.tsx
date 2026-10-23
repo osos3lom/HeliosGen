@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, Suspense } fr
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import { IMAGE_MODELS, VIDEO_MODELS, AZURE_POPULAR_SIZES, validateAzureCustomSize } from "@/lib/modelConfig";
-import { PROVIDERS, getModelProvider, setModelProvider, modelHasProviderChoice } from "@/lib/providers";
+import { PROVIDERS, getModelProvider, setModelProvider, modelHasProviderChoice, type ProviderId } from "@/lib/providers";
 import { useWorkflowStore } from "@/lib/store";
 import { Maximize2, Minimize2, ShieldAlert, X } from "lucide-react";
 
@@ -19,6 +19,7 @@ import DotCanvasBackground from "@/components/ui/DotCanvasBackground";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Button } from "@/components/ui/button";
 import { browserNotify, requestNotificationPermission } from "@/lib/browserNotify";
+import { apiFetch } from "@/lib/api/client";
 
 function randomUUID(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -927,7 +928,7 @@ function GalleryInner() {
     toResume.forEach(async (pending) => {
       try {
         // Check immediately (no 3s delay) before entering the regular poll loop
-        const immediateRes = await fetch(`/api/job-status?taskId=${pending.taskId!}`);
+        const immediateRes = await apiFetch(`/api/job-status?taskId=${pending.taskId!}`);
         const immediateResult = await immediateRes.json() as { status: string; error?: string };
         if (immediateResult.status === "error") throw new Error(immediateResult.error ?? "Generation failed");
         if (immediateResult.status === "not_found") {
@@ -996,7 +997,7 @@ function GalleryInner() {
     if (!token) { setLoading(false); setLoadingMore(false); return; }
     try {
       const genType = currentTab === "videos" ? "video" : "image";
-      const res = await fetch(`/api/gallery?type=${genType}&page=${page}&source=${apiSource}`, {
+      const res = await apiFetch(`/api/gallery?type=${genType}&page=${page}&source=${apiSource}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) return;
@@ -1041,7 +1042,7 @@ function GalleryInner() {
     if (!token) return [];
     try {
       const genType = currentTab === "videos" ? "video" : "image";
-      const res = await fetch(`/api/gallery?type=${genType}&page=0&source=generation`, {
+      const res = await apiFetch(`/api/gallery?type=${genType}&page=0&source=generation`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) return [];
@@ -1379,7 +1380,7 @@ function GalleryInner() {
     await Promise.all(toAdd.map(async (file, i) => {
       const entry = newEntries[i];
       try {
-        const res = await fetch("/api/upload-asset", {
+        const res = await apiFetch("/api/upload-asset", {
           method: "POST",
           headers: {
             "Content-Type": file.type,
@@ -1480,7 +1481,7 @@ function GalleryInner() {
     await Promise.all(toAdd.map(async (file, i) => {
       const entry = newEntries[i];
       try {
-        const res = await fetch("/api/upload-asset", {
+        const res = await apiFetch("/api/upload-asset", {
           method: "POST",
           headers: { "Content-Type": file.type, ...(token ? { Authorization: `Bearer ${token}` } : {}) },
           body: file,
@@ -1634,7 +1635,7 @@ function GalleryInner() {
       const isAzure = !!(azureBaseUrl && azureDeployment && providerForModel === "azure");
       const isCodex = providerForModel === "codex";
 
-      const res = await fetch("/api/generate", {
+      const res = await apiFetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -1721,7 +1722,7 @@ function GalleryInner() {
         ? (veoMode === "references" ? "REFERENCE_2_VIDEO" : (veoImageUrls.length > 0 ? "FIRST_AND_LAST_FRAMES_2_VIDEO" : "TEXT_2_VIDEO"))
         : undefined;
 
-      const res = await fetch("/api/generate-video", {
+      const res = await apiFetch("/api/generate-video", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(isVeo ? {
@@ -1773,7 +1774,7 @@ function GalleryInner() {
 
     for (let i = 0; i < 150; i++) {
       await waitOrVisible(3_000);
-      const poll = await fetch(`/api/job-status?taskId=${taskId}`);
+      const poll = await apiFetch(`/api/job-status?taskId=${taskId}`);
       const result = await poll.json() as { status: string; error?: string };
       if (result.status === "done") return;
       if (result.status === "error") throw new Error(result.error ?? "Generation failed");
@@ -2381,7 +2382,7 @@ function GalleryInner() {
     const token = await getToken();
     if (!token) return;
     const item = items.find(i => i.id === id);
-    await fetch("/api/gallery", {
+    await apiFetch("/api/gallery", {
       method: "DELETE",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ id, source }),
@@ -2402,7 +2403,7 @@ function GalleryInner() {
     const taskId = randomUUID();
     setDownloads(prev => [...prev, { id: taskId, filename, status: "preparing" }]);
     try {
-      const res = await fetch(`/api/download?url=${encodeURIComponent(url)}&filename=${filename}`);
+      const res = await apiFetch(`/api/download?url=${encodeURIComponent(url)}&filename=${filename}`);
       if (!res.ok) throw new Error("Failed");
       const blob = await res.blob();
       const objectUrl = URL.createObjectURL(blob);
@@ -2441,7 +2442,7 @@ function GalleryInner() {
     const token = await getToken();
     if (!token) return;
     await Promise.all(toDelete.map(item =>
-      fetch("/api/gallery", {
+      apiFetch("/api/gallery", {
         method: "DELETE",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ id: item.id, source: item.source }),
@@ -2883,7 +2884,7 @@ function GalleryInner() {
                                   if (retryIsVideo) {
                                     const vm = VIDEO_MODELS.find(m => m.id === modelId);
                                     const isVeo = !!(vm?.apiInput.useGoogleVeo);
-                                    const res = await fetch("/api/generate-video", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(isVeo ? {
+                                    const res = await apiFetch("/api/generate-video", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(isVeo ? {
                                       model: modelId, prompt: pg.prompt, aspect_ratio: pg.aspectRatio, generationType: "TEXT_2_VIDEO",
                                       imageUrls: storedRefs, enableTranslation: true, enableFallback: false, watermark: "",
                                     } : {
@@ -2903,7 +2904,7 @@ function GalleryInner() {
                                     const providerForModel = (() => { try { return JSON.parse(localStorage.getItem("aiui-model-providers") ?? "{}")[modelId] ?? "kie"; } catch { return "kie"; } })();
                                     const isAzure = !!(azureBaseUrl && azureDeployment && providerForModel === "azure");
                                     const isCodex = providerForModel === "codex";
-                                    const res = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ prompt: resolvedPrompt, model: modelId, aspectRatio: pg.aspectRatio, quality, imageUrls, ...(isAzure ? { azureBaseUrl, azureDeployment, azureQuality: quality } : {}), ...(isCodex ? { codexProvider: true } : {}) }) });
+                                    const res = await apiFetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ prompt: resolvedPrompt, model: modelId, aspectRatio: pg.aspectRatio, quality, imageUrls, ...(isAzure ? { azureBaseUrl, azureDeployment, azureQuality: quality } : {}), ...(isCodex ? { codexProvider: true } : {}) }) });
                                     const d = await res.json() as { taskId?: string; error?: string };
                                     if (!res.ok) throw new Error(d.error ?? "Failed");
                                     taskId = d.taskId!;
@@ -4836,7 +4837,7 @@ function ElementPickerModal({
     await Promise.all(toAdd.map(async (file, i) => {
       const entry = newEntries[i];
       try {
-        const res = await fetch("/api/upload-asset", {
+        const res = await apiFetch("/api/upload-asset", {
           method: "POST",
           headers: { "Content-Type": file.type, ...(token ? { Authorization: `Bearer ${token}` } : {}) },
           body: file,
@@ -5585,7 +5586,7 @@ function RatioPreview({ ratio }: { ratio: string }) {
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
 /** Backend brand mark for the Kie.ai/Azure Foundry/Codex CLI picker — distinct from ProviderIcon's model-brand icons. */
-function ProviderBackendIcon({ id }: { id: (typeof PROVIDERS)[number]["id"] }) {
+function ProviderBackendIcon({ id }: { id: ProviderId }) {
   if (id === "kie") {
     return (
       <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "14px", height: "14px", fontSize: "11px", fontWeight: 700 }}>
@@ -6469,7 +6470,7 @@ function Lightbox({ item, thumbUrl, onClose, onCopyPrompt, onPrev, onNext }: { i
       const urlExt = lightboxUrl.split("?")[0].split(".").pop()?.toLowerCase();
       const ext = isVideo ? "mp4" : (urlExt && ["png","jpg","jpeg","webp","gif"].includes(urlExt) ? urlExt : "png");
       const filename = `${isVideo ? "video" : "image"}-${item.id.slice(0, 8)}.${ext}`;
-      const res = await fetch(`/api/download?url=${encodeURIComponent(lightboxUrl)}&filename=${filename}`);
+      const res = await apiFetch(`/api/download?url=${encodeURIComponent(lightboxUrl)}&filename=${filename}`);
       if (!res.ok) throw new Error("Download failed");
       const blob = await res.blob();
       const a = document.createElement("a");

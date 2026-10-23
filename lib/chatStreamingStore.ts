@@ -5,6 +5,7 @@ import { SYSTEM_PROMPT } from "./systemPrompt";
 import { useChatSessionStore, type StoredMessage } from "./chatSessionStore";
 import { useWorkflowStore } from "./store";
 import { currentRoute } from "@/src/lib/assetUrl";
+import { apiFetch } from "@/lib/api/client";
 
 export interface StreamState {
   content: string;
@@ -45,7 +46,7 @@ export const useChatStreamingStore = create<ChatStreamingState>()((set, get) => 
     (async () => {
       try {
         const token = await getToken();
-        const res = await fetch("/api/assistant", {
+        const res = await apiFetch("/api/assistant", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

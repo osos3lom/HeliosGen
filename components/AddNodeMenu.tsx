@@ -8,6 +8,7 @@ import { getToken } from "@/lib/galleryUtils";
 import { MediaPickerModal } from "@/components/MediaPickerModal";
 
 import { Search, X, Upload, LayoutGrid } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
 
 const TOOLBAR_OFFSET_PX = 80;
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -194,7 +195,7 @@ export default function AddNodeMenu({ anchorRect, onClose }: AddNodeMenuProps) {
       const headers: Record<string, string> = { "Content-Type": file.type || (isVideo ? "video/mp4" : "image/jpeg") };
       if (token) headers["Authorization"] = `Bearer ${token}`;
       try {
-        const res = await fetch("/api/upload-asset", {
+        const res = await apiFetch("/api/upload-asset", {
           method: "POST",
           headers,
           body: bytes,

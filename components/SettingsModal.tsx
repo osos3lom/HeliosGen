@@ -4,16 +4,12 @@ import { IMAGE_MODELS, VIDEO_MODELS } from "@/lib/modelConfig";
 import { MODEL_GROUPS } from "@/lib/models";
 import { useWorkflowStore } from "@/lib/store";
 import { PROVIDERS, ProviderId, loadModelProviders, saveModelProviders, getModelProvider } from "@/lib/providers";
+import { apiFetch } from "@/lib/api/client";
 
 /* ─── Provider options (re-exported for backwards compat) ───────────────────── */
 
 export { PROVIDERS, loadModelProviders, saveModelProviders, getModelProvider };
 export type { ProviderId };
-
-export type CodexStatus =
-  | { kind: "unknown" }
-  | { kind: "ready" }
-  | { kind: "not_ready"; installed: boolean; authFound: boolean };
 
 /* ─── Persistence ───────────────────────────────────────────────────────────── */
 
@@ -1147,14 +1143,14 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     setAzureTextModelName(loadAzureTextModelName());
     // Check if Kie key is saved on the server
     authHeader().then((h) =>
-      fetch("/api/settings/kie-key", { headers: h })
+      apiFetch("/api/settings/kie-key", { headers: h })
         .then((r) => r.json())
         .then((d) => setKieKeyStatus(d.hasToken ? "set" : "unset"))
         .catch(() => setKieKeyStatus("unset"))
     );
     // Check if Azure key is saved on the server
     authHeader().then((h) =>
-      fetch("/api/settings/azure-key", { headers: h })
+      apiFetch("/api/settings/azure-key", { headers: h })
         .then((r) => r.json())
         .then((d) => setAzureKeyStatus(d.hasToken ? "set" : "unset"))
         .catch(() => setAzureKeyStatus("unset"))
@@ -1194,7 +1190,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
   const handleKieKeySave = async (token: string) => {
     const h = await authHeader();
-    const res = await fetch("/api/settings/kie-key", {
+    const res = await apiFetch("/api/settings/kie-key", {
       method: "POST",
       headers: { ...h, "Content-Type": "application/json" },
       body: JSON.stringify({ kieApiToken: token }),
@@ -1206,14 +1202,14 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
   const handleKieKeyDelete = async () => {
     const h = await authHeader();
-    await fetch("/api/settings/kie-key", { method: "DELETE", headers: h });
+    await apiFetch("/api/settings/kie-key", { method: "DELETE", headers: h });
     setKieKeyStatus("unset");
     setKieKeySet(false);
   };
 
   const handleAzureKeySave = async (key: string) => {
     const h = await authHeader();
-    const res = await fetch("/api/settings/azure-key", {
+    const res = await apiFetch("/api/settings/azure-key", {
       method: "POST",
       headers: { ...h, "Content-Type": "application/json" },
       body: JSON.stringify({ azureApiKey: key }),
@@ -1225,7 +1221,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
   const handleAzureKeyDelete = async () => {
     const h = await authHeader();
-    await fetch("/api/settings/azure-key", { method: "DELETE", headers: h });
+    await apiFetch("/api/settings/azure-key", { method: "DELETE", headers: h });
     setAzureKeyStatus("unset");
     setAzureKeySet(false);
   };

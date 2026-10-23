@@ -8,7 +8,6 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "dev:api": "next dev -p 3000",
     "lint": "eslint",
     "desktop:dev": "node scripts/desktop/dev.mjs",
     "desktop:check-version": "node scripts/desktop/check-version.mjs",

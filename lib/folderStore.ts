@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { apiFetch as clientApiFetch } from "@/lib/api/client";
 
 export interface Folder {
   id: string;
@@ -43,7 +44,7 @@ async function apiFetch(url: string, options: RequestInit = {}): Promise<Respons
     "Content-Type": "application/json",
     ...(options.headers ?? {}),
   };
-  return fetch(url, { ...options, headers });
+  return clientApiFetch(url, { ...options, headers });
 }
 
 export const useFolderStore = create<FolderState>()(

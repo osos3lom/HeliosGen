@@ -13,6 +13,7 @@ import { ShieldBan } from "lucide-react";
 import { VIDEO_MODELS as VIDEO_MODEL_CFG } from "@/lib/modelConfig";
 import { useGeneratingBorderAnimation } from "@/lib/useGeneratingBorderAnimation";
 import MissingInputWarning from "./MissingInputWarning";
+import { apiFetch, ApiEventSource } from "@/lib/api/client";
 
 type VideoGeneratorNodeType = Node<NodeData, "videoGeneratorNode">;
 
@@ -308,7 +309,7 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
     const filename = `video-${Date.now()}.mp4`;
     setIsSaving(true);
     try {
-      const resp = await fetch(`/api/download?url=${encodeURIComponent(url)}&filename=${filename}`);
+      const resp = await apiFetch(`/api/download?url=${encodeURIComponent(url)}&filename=${filename}`);
       const blob = await resp.blob();
       const obj = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -479,7 +480,7 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
     const taskId = data.taskId as string | undefined;
     if (!taskId || status !== "running") return;
 
-    const es = new EventSource(`/api/job-stream?taskId=${taskId}`);
+    const es = new ApiEventSource(`/api/job-stream?taskId=${taskId}`);
 
     es.onmessage = (event) => {
       es.close();
@@ -684,7 +685,7 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
     try {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       const body = isLastFrame ? { videoUrl: url, lastFrame: true } : { videoUrl: url, timeSeconds: 0 };
-      const r = await fetch("/api/extract-frame", { method: "POST", headers, body: JSON.stringify(body) });
+      const r = await apiFetch("/api/extract-frame", { method: "POST", headers, body: JSON.stringify(body) });
       const j = await r.json();
       if (j.cdnUrl) {
         updateNodeData(id, { [isLastFrame ? "eagerEndFrameUrl" : "eagerStartFrameUrl"]: j.cdnUrl });
@@ -741,7 +742,7 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
       if (!srcUrl) throw new Error("No video source");
 
       const extractHeaders: Record<string, string> = { "Content-Type": "application/json" };
-      const res = await fetch("/api/extract-frame", {
+      const res = await apiFetch("/api/extract-frame", {
         method: "POST",
         headers: extractHeaders,
         body: JSON.stringify({ videoUrl: srcUrl, timeSeconds: seekTime }),
@@ -926,7 +927,7 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
         if (tStart !== undefined && tEnd !== undefined) {
           try {
             const trimHeaders: Record<string, string> = { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` };
-            const trimRes = await fetch("/api/trim-video", {
+            const trimRes = await apiFetch("/api/trim-video", {
               method: "POST",
               headers: trimHeaders,
               body: JSON.stringify({ videoUrl: finalVideoRefUrl, startTime: tStart, endTime: tEnd }),
@@ -968,7 +969,7 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
         const body = isLast
           ? { videoUrl: vUrl, ...(tEnd !== undefined ? { timeSeconds: tEnd } : { lastFrame: true }) }
           : { videoUrl: vUrl, timeSeconds: tStart ?? 0 };
-        const r = await fetch("/api/extract-frame", { method: "POST", headers: frameHeaders, body: JSON.stringify(body) });
+        const r = await apiFetch("/api/extract-frame", { method: "POST", headers: frameHeaders, body: JSON.stringify(body) });
         const j = await r.json();
         if (j.cdnUrl) {
           if (fe.targetHandle === "startFrame") finalStartFrameUrl = j.cdnUrl;
@@ -1016,7 +1017,7 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
       updateNodeData(id, { status: "running", generations: [...prevGens, null] as GenEntry[], generationsMeta: [...prevMeta, thisMeta], currentGenIdx: prevGens.length });
       setLoading(true);
       try {
-        await fetch("/api/generate-video", {
+        await apiFetch("/api/generate-video", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
           body: JSON.stringify({ ...payload, debugOnly: true }),
@@ -1046,7 +1047,7 @@ export default function VideoGeneratorNode({ id, data, selected }: NodeProps<Vid
       setLoading(true);
       updateNodeData(id, { status: "running" });
       try {
-        const res = await fetch("/api/generate-video", {
+        const res = await apiFetch("/api/generate-video", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
           body: JSON.stringify(payload),
