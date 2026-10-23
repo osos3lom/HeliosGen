@@ -80,6 +80,9 @@ function filterKeys<T extends object>(obj: T, keys: (keyof T)[]): Partial<T> | n
 export function getNodeLabel(type: string, n: number): string {
   if (type === "assistantNode") return "ASSISTANT";
   const map: Record<string, string> = {
+    localLlmNode:        `Local LLM #${n}`,
+    localImageNode:      `Local Image #${n}`,
+    localToolNode:       `Local Tools #${n}`,
     promptNode:          `Text #${n}`,
     imageInputNode:      `Image #${n}`,
     generateNode:        `Image Generator #${n}`,

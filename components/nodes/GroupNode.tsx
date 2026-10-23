@@ -206,7 +206,7 @@ export default function GroupNode({ id, data, selected }: NodeProps<GroupNodeTyp
 
       // Prefer text-type sources (same logic as resolveInputs)
       const textSources = allSources.filter(
-        (n) => n.type === "promptNode" || n.type === "assistantNode"
+        (n) => n.type === "promptNode" || n.type === "assistantNode" || n.type === "localLlmNode"
       );
       const sources = textSources.length > 0 ? textSources : allSources;
       const sourceLabel =

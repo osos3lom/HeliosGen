@@ -1,5 +1,6 @@
 import { Node, Edge } from "@xyflow/react";
 import { NodeData } from "./store";
+import { GENERATOR_NODE_TYPES } from "./nodeTypes";
 
 /** Topological sort — returns node ids in execution order */
 export function topoSort(nodes: Node<NodeData>[], edges: Edge[]): string[] {
@@ -37,7 +38,7 @@ export function topoSort(nodes: Node<NodeData>[], edges: Edge[]): string[] {
 export function buildPipelineWaves(nodes: Node<NodeData>[], edges: Edge[]): string[][] {
   const genIds = new Set(
     nodes
-      .filter(n => n.type === "generateNode" || n.type === "videoGeneratorNode")
+      .filter(n => GENERATOR_NODE_TYPES.has(n.type ?? ""))
       .map(n => n.id)
   );
   if (genIds.size === 0) return [];
@@ -127,7 +128,11 @@ export function resolveInputs(
     if (src.type === "promptNode") {
       result.prompt = src.data.prompt as string | undefined;
     }
-    if (src.type === "assistantNode") {
+    if (src.type === "assistantNode" || src.type === "localLlmNode") {
+      result.prompt = src.data.outputText as string | undefined;
+    }
+    // Local Tools in "describe" mode emits its caption on the textOut handle.
+    if (src.type === "localToolNode" && edge.sourceHandle === "textOut") {
       result.prompt = src.data.outputText as string | undefined;
     }
 

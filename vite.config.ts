@@ -30,8 +30,15 @@ export default defineConfig(({ mode }) => {
       port: 5173,
     },
     optimizeDeps: {
-      // ffmpeg.wasm spawns its own module worker; pre-bundling breaks that.
-      exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
+      // Pre-bundle the heavy local-model libraries up front so the dev server
+      // doesn't discover them mid-session and force a reload.
+      include: ["@mlc-ai/web-llm", "@huggingface/transformers"],
+      // ffmpeg.wasm and onnxruntime-web load their own workers/wasm relative to
+      // their module URL; pre-bundling breaks that.
+      exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util", "onnxruntime-web"],
+    },
+    worker: {
+      format: "es" as const,
     },
     build: {
       outDir: "dist",

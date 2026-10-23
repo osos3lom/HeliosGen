@@ -1,8 +1,19 @@
 // Shared node type definitions — imported by both Sidebar and NodePickerMenu
 import React from "react";
-import { MessageSquare, Image, Film, Sparkles, Bot, Clapperboard, StickyNote } from "lucide-react";
+import { MessageSquare, Image, Film, Sparkles, Bot, Clapperboard, StickyNote, Cpu, Wand2, ScanText } from "lucide-react";
 
-export type NodeCategory = "generators" | "resources";
+export type NodeCategory = "generators" | "resources" | "local";
+
+/** On-device (WebGPU) node types — see lib/local/ and components/nodes/local/. */
+export const LOCAL_NODE_TYPES = ["localLlmNode", "localImageNode", "localToolNode"] as const;
+
+/** Node types the pipeline runner triggers (they respond to `pendingGenerate`). */
+export const GENERATOR_NODE_TYPES = new Set<string>(["generateNode", "videoGeneratorNode", ...LOCAL_NODE_TYPES]);
+
+/** True when a connection from this source carries text (feeds a "prompt" input). */
+export function isTextSource(type: string | undefined | null, sourceHandle?: string | null): boolean {
+  return type === "promptNode" || type === "assistantNode" || type === "localLlmNode" || sourceHandle === "textOut";
+}
 
 export const NODE_META: Record<
   string,
@@ -15,6 +26,9 @@ export const NODE_META: Record<
   assistantNode:      { accent: "#FBBF24", bg: "#1c1000",  bigIcon: <Bot           size={18} strokeWidth={1.7} /> },
   videoGeneratorNode: { accent: "#5EEAD4", bg: "#042f2e",  bigIcon: <Clapperboard  size={18} strokeWidth={1.7} /> },
   commentNode:        { accent: "#FACC15", bg: "#2a2005",  bigIcon: <StickyNote    size={18} strokeWidth={1.7} /> },
+  localLlmNode:       { accent: "#a3e635", bg: "#132005",  bigIcon: <Cpu           size={18} strokeWidth={1.7} /> },
+  localImageNode:     { accent: "#a3e635", bg: "#132005",  bigIcon: <Wand2         size={18} strokeWidth={1.7} /> },
+  localToolNode:      { accent: "#a3e635", bg: "#132005",  bigIcon: <ScanText      size={18} strokeWidth={1.7} /> },
 };
 
 export const NODES: Array<{
@@ -65,6 +79,32 @@ export const NODES: Array<{
       ),
       label: "Image",
       description: "Nano Banana 2 · image generation",
+    },
+
+    /* ── On-device (WebGPU) ──────────────────────────────────────────────────── */
+    {
+      type: "localLlmNode",
+      category: "local",
+      canReceiveConnection: true,
+      icon: <Cpu size={14} strokeWidth={1.6} />,
+      label: "Local LLM",
+      description: "On-device text model · WebGPU, no API key",
+    },
+    {
+      type: "localImageNode",
+      category: "local",
+      canReceiveConnection: true,
+      icon: <Wand2 size={14} strokeWidth={1.6} />,
+      label: "Local Image",
+      description: "SD-Turbo on your GPU · 512×512",
+    },
+    {
+      type: "localToolNode",
+      category: "local",
+      canReceiveConnection: true,
+      icon: <ScanText size={14} strokeWidth={1.6} />,
+      label: "Local Tools",
+      description: "Remove background · upscale · describe image",
     },
 
     /* ── Resources ──────────────────────────────────────────────────────────── */
@@ -153,6 +193,9 @@ export const NODE_SIZE: Record<string, { w: number; h: number }> = {
   imageInputNode: { w: 200, h: 160 },
   videoInputNode: { w: 220, h: 180 },
   commentNode: { w: 260, h: 160 },
+  localLlmNode: { w: 300, h: 300 },
+  localImageNode: { w: 300, h: 380 },
+  localToolNode: { w: 280, h: 300 },
 };
 
 export const FALLBACK_SIZE = { w: 280, h: 280 };

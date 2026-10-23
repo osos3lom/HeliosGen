@@ -22,7 +22,7 @@ import { requestWorkflowSync } from "@/lib/workflowSyncBus";
 import { VIDEO_MODELS } from "@/lib/modelConfig";
 import CuttableEdge from "@/components/edges/CuttableEdge";
 import { topoSort, resolveInputs } from "@/lib/executor";
-import { NODE_SIZE, FALLBACK_SIZE, getLastNodeSettings, getDefaultNodeSize } from "@/lib/nodeTypes";
+import { NODE_SIZE, FALLBACK_SIZE, getLastNodeSettings, getDefaultNodeSize, GENERATOR_NODE_TYPES, isTextSource } from "@/lib/nodeTypes";
 import { edgeStyle } from "@/lib/edgeStyles";
 import { sha256Hex } from "@/lib/assetHash";
 import { detectTextMode } from "@/lib/textFormat";
@@ -35,6 +35,9 @@ import VideoInputNode from "./nodes/VideoInputNode";
 import GenerateNode from "./nodes/GenerateNode";
 import VideoGeneratorNode from "./nodes/VideoGeneratorNode";
 import AssistantNode from "./nodes/AssistantNode";
+import LocalLLMNode from "./nodes/local/LocalLLMNode";
+import LocalImageNode from "./nodes/local/LocalImageNode";
+import LocalToolNode from "./nodes/local/LocalToolNode";
 import GroupNode from "./nodes/GroupNode";
 import CommentNode from "./nodes/CommentNode";
 import NodePickerMenu, { DropState } from "./NodePickerMenu";
@@ -60,6 +63,9 @@ const nodeTypes = {
   generateNode: GenerateNode,
   videoGeneratorNode: VideoGeneratorNode,
   assistantNode: AssistantNode,
+  localLlmNode: LocalLLMNode,
+  localImageNode: LocalImageNode,
+  localToolNode: LocalToolNode,
   groupNode: GroupNode,
   commentNode: CommentNode,
 };
@@ -151,6 +157,9 @@ function nodeLabel(type: string, existingNodes: Node<NodeData>[]): string {
     generateNode: "IMAGE GEN",
     videoGeneratorNode: "VIDEO GEN",
     assistantNode: "ASSISTANT",
+    localLlmNode: "LOCAL LLM",
+    localImageNode: "LOCAL IMAGE",
+    localToolNode: "LOCAL TOOLS",
   };
   if (type === "assistantNode") return "ASSISTANT";
   return `${names[type] ?? type} #${count}`;
@@ -1001,12 +1010,8 @@ export default function WorkflowCanvas() {
         return connection.targetHandle === "decorativeText" || connection.targetHandle === "decorativeImage";
       }
 
-      // Prompt handles only accept text-producing nodes
-      if (
-        connection.targetHandle === "prompt" &&
-        source?.type !== "promptNode" &&
-        source?.type !== "assistantNode"
-      ) return false;
+      // Prompt handles only accept text-producing nodes / handles
+      if (connection.targetHandle === "prompt" && !isTextSource(source?.type, connection.sourceHandle)) return false;
 
       // videoRef handle only accepts video nodes
       if (connection.targetHandle === "videoRef") {
@@ -1015,7 +1020,7 @@ export default function WorkflowCanvas() {
 
       // Image/resource handles do not accept text (prompt) nodes
       if (
-        source?.type === "promptNode" &&
+        isTextSource(source?.type, connection.sourceHandle) &&
         (connection.targetHandle === "image" ||
           connection.targetHandle === "resource" ||
           connection.targetHandle === "startFrame" ||
@@ -1497,7 +1502,7 @@ export default function WorkflowCanvas() {
   }, []);
 
   const canRun = !isRunning && nodes.some(
-    (n) => n.type === "generateNode" || n.type === "videoGeneratorNode" || n.type === "assistantNode"
+    (n) => GENERATOR_NODE_TYPES.has(n.type ?? "") || n.type === "assistantNode"
   );
 
   const computedNodes = useMemo(() => {

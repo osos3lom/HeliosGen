@@ -34,11 +34,11 @@ function closestRatio(ratioFloat: number, candidates: string[]): string | null {
 // Node types whose OUTPUT can feed a given input handle
 function sourceNodeTypesFor(targetHandle: string | null): string[] {
   switch (targetHandle) {
-    case "prompt":                         return ["promptNode", "assistantNode"];
+    case "prompt":                         return ["promptNode", "assistantNode", "localLlmNode"];
     case "image":
     case "startFrame":
     case "endFrame":
-    case "resource":                       return ["imageInputNode", "generateNode"];
+    case "resource":                       return ["imageInputNode", "generateNode", "localImageNode", "localToolNode"];
     case "videoRef":
     case "referenceVideo":                 return ["videoInputNode"];
     default:                               return [];
@@ -77,6 +77,9 @@ const NODE_DISPLAY_NAMES: Record<string, string> = {
   generateNode:       "IMAGE GEN",
   videoGeneratorNode: "VIDEO GEN",
   assistantNode:      "ASSISTANT",
+  localLlmNode:       "LOCAL LLM",
+  localImageNode:     "LOCAL IMAGE",
+  localToolNode:      "LOCAL TOOLS",
 };
 
 export interface DropState {
@@ -105,15 +108,15 @@ function targetHandleFor(
   if (sourceHandleId) {
     switch (sourceHandleId) {
       case "textOut":
-        return "prompt";
+        return targetNodeType === "localToolNode" ? null : "prompt";
       case "startFrameOut":
       case "imagePickOut":
         if (targetNodeType === "videoGeneratorNode") return "startFrame";
-        if (targetNodeType === "generateNode")       return "image";
+        if (targetNodeType === "generateNode" || targetNodeType === "localToolNode") return "image";
         return null;
       case "endFrameOut":
         if (targetNodeType === "videoGeneratorNode") return "endFrame";
-        if (targetNodeType === "generateNode")       return "image";
+        if (targetNodeType === "generateNode" || targetNodeType === "localToolNode") return "image";
         return null;
       case "videoRefOut":
         if (targetNodeType === "videoGeneratorNode") return "videoRef";
@@ -124,10 +127,15 @@ function targetHandleFor(
     }
   }
   // Single-output nodes — fall back to node-type routing
-  if (sourceNodeType === "promptNode" || sourceNodeType === "assistantNode") return "prompt";
-  if (sourceNodeType === "imageInputNode" || sourceNodeType === "generateNode") {
+  if (sourceNodeType === "promptNode" || sourceNodeType === "assistantNode" || sourceNodeType === "localLlmNode") {
+    return targetNodeType === "localToolNode" ? null : "prompt";
+  }
+  if (
+    sourceNodeType === "imageInputNode" || sourceNodeType === "generateNode" ||
+    sourceNodeType === "localImageNode" || sourceNodeType === "localToolNode"
+  ) {
     if (targetNodeType === "videoGeneratorNode") return "startFrame";
-    if (targetNodeType === "generateNode")       return "image";
+    if (targetNodeType === "generateNode" || targetNodeType === "localToolNode") return "image";
   }
   if (sourceNodeType === "videoInputNode") {
     if (targetNodeType === "videoGeneratorNode") return "videoRef";

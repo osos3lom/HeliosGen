@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useWorkflowStore } from "./store";
 import { buildPipelineWaves } from "./executor";
+import { GENERATOR_NODE_TYPES } from "./nodeTypes";
 
 interface PipelineState {
   waves: string[][];
@@ -23,9 +24,7 @@ export function usePipelineRunner(scopeNodeIds?: string[]) {
     ? nodes.filter(n => scopeNodeIds.includes(n.id))
     : nodes;
 
-  const genNodeCount = scopedNodes.filter(
-    n => n.type === "generateNode" || n.type === "videoGeneratorNode"
-  ).length;
+  const genNodeCount = scopedNodes.filter(n => GENERATOR_NODE_TYPES.has(n.type ?? "")).length;
 
   const run = useCallback(() => {
     const { nodes, edges } = useWorkflowStore.getState();

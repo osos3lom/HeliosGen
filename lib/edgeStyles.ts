@@ -37,6 +37,9 @@ export function getSourceHandleColor(nodeType: string | undefined, sourceHandleI
   switch (nodeType) {
     case "promptNode": return "#2DD4BF";
     case "assistantNode": return "#FBBF24";
+    case "localLlmNode": return "#a3e635";
+    case "localImageNode": return "#818cf8";
+    case "localToolNode": return sourceHandleId === "textOut" ? "#a3e635" : "#818cf8";
     case "imageInputNode": return "#818cf8";
     case "generateNode": return "#818cf8";
     case "videoInputNode": return "#22d3ee";

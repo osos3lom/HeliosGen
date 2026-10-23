@@ -23,6 +23,11 @@ const SECTIONS: Array<{ id: string; label: string; nodeTypes: string[] }> = [
     nodeTypes: ["generateNode", "videoGeneratorNode", "assistantNode"],
   },
   {
+    id: "local",
+    label: "ON-DEVICE · WEBGPU",
+    nodeTypes: ["localLlmNode", "localImageNode", "localToolNode"],
+  },
+  {
     id: "resources",
     label: "INPUTS",
     nodeTypes: ["promptNode"],
@@ -102,6 +107,9 @@ export default function AddNodeMenu({ anchorRect, onClose }: AddNodeMenuProps) {
         videoGeneratorNode: "VIDEO GEN",
         assistantNode: "ASSISTANT",
         commentNode: "COMMENT",
+        localLlmNode: "LOCAL LLM",
+        localImageNode: "LOCAL IMAGE",
+        localToolNode: "LOCAL TOOLS",
       };
       const label = `${DISPLAY[type] ?? type} #${count}`;
 

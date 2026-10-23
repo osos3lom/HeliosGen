@@ -11,6 +11,7 @@ import { Maximize2, Minimize2, ShieldAlert, X } from "lucide-react";
 type User = { id: string };
 import { GalleryItem, getToken, galleryCache } from "@/lib/galleryUtils";
 import { assetUrl } from "@/src/lib/assetUrl";
+import { displayModelName } from "@/lib/local/display";
 import { useFolderStore } from "@/lib/folderStore";
 import { MediaPickerModal } from "@/components/MediaPickerModal";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -6046,7 +6047,7 @@ function GalleryCard({
           </div>
         )}
         <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.35)" }}>
-          {[item.model, item.aspect_ratio].filter(Boolean).join(" · ") || (item.source === "upload" ? "Uploaded" : "")}
+          {[displayModelName(item.model), item.aspect_ratio].filter(Boolean).join(" · ") || (item.source === "upload" ? "Uploaded" : "")}
         </p>
       </div>
 
@@ -6487,7 +6488,7 @@ function Lightbox({ item, thumbUrl, onClose, onCopyPrompt, onPrev, onNext }: { i
     new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
   const infoRows = [
-    item.model && { label: "Model", value: item.model },
+    item.model && { label: "Model", value: displayModelName(item.model) },
     item.quality && { label: "Quality", value: item.quality.charAt(0).toUpperCase() + item.quality.slice(1) },
     item.aspect_ratio && { label: "Aspect ratio", value: item.aspect_ratio },
     resolution && { label: "Resolution", value: resolution },
