@@ -7,8 +7,9 @@
  */
 import * as ort from "onnxruntime-web/webgpu";
 import { AutoTokenizer, env as hfEnv } from "@huggingface/transformers";
+import { ORT_WASM_PATHS } from "./ortWasm";
 
-ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/";
+ort.env.wasm.wasmPaths = ORT_WASM_PATHS;
 hfEnv.allowLocalModels = false;
 
 const REPO_URL = "https://huggingface.co/schmuell/sd-turbo-ort-web/resolve/main/";

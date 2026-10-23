@@ -14,8 +14,11 @@ import {
   pipeline,
   type ProgressInfo,
 } from "@huggingface/transformers";
+import { ORT_WASM_PATHS } from "./ortWasm";
 
 env.allowLocalModels = false;
+// transformers.js defaults to the CDN copy of ONNX Runtime; use the bundled one.
+env.backends.onnx.wasm!.wasmPaths = ORT_WASM_PATHS;
 
 type Mode = "remove-bg" | "upscale-2x" | "upscale-4x" | "caption";
 type InMsg = { id: number; mode: Mode; repo: string; image: Blob; webgpu: boolean };

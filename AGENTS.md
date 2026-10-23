@@ -29,6 +29,10 @@ or anything that needs secrets at build time.
   from `import.meta.env`, which is compiled into the public bundle.
 - **Heavy work belongs in Web Workers** (`new Worker(new URL("./x.worker.ts", import.meta.url), { type: "module" })`),
   lazy-loaded so it stays out of the main bundle.
+- **One ONNX Runtime**: `onnxruntime-web` is pinned to the exact version `@huggingface/transformers`
+  depends on, so pnpm installs a single copy and Vite emits one ~27 MB `ort-wasm-*.wasm`. Workers
+  set `wasmPaths` from `lib/local/workers/ortWasm.ts` (self-hosted, not the CDN). When upgrading
+  transformers.js, re-pin `onnxruntime-web` to its new `onnxruntime-web` dependency.
 - Generator nodes respond to `pendingGenerate` (see `lib/usePipelineRunner.ts`); register new node
   types in `lib/nodeTypes.tsx` (`GENERATOR_NODE_TYPES`, `isTextSource`), `components/WorkflowCanvas.tsx`
   and the node menus.
